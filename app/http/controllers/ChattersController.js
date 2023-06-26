@@ -1,16 +1,19 @@
-const ApiController = require('./ApiController');
+exports.list = (req, res) => {
+  res.send('Controller `list` not implemented.');
+};
 
-class ChattersController extends ApiController {
-  list (req, res) {
-    this.respondWithJSON(res, [
-      {
-        id: 1,
-        twitch_id: 80000,
-        username: 'aodev',
-        display_name: 'AODev'
-      }
-    ]);
-  }
-}
+exports.detail = (req, res) => {
+  res.send('Controller `detail` not implemented.');
+};
 
-module.exports = new ChattersController();
+exports.create = (req, res) => {
+  res.send('Controller `create` not implemented.');
+};
+
+exports.update = (req, res) => {
+  res.send('Controller `update` not implemented.');
+};
+
+exports.destroy = (req, res) => {
+  res.send('Controller `destroy` not implemented.');
+};
