@@ -2,14 +2,15 @@ const ChatModel = (sequelize, Sequelize) => {
   const { Chatter, Stream } = sequelize.models;
   const { STRING, INTEGER, TEXT } = Sequelize;
   const Chat = sequelize.define('Chat', {
-    chatter_id: { type: INTEGER },
+    id: { type: INTEGER, primaryKey: true, autoIncrement: true },
     stream_id: { type: INTEGER },
+    chatter_id: { type: INTEGER },
     message_type: { type: STRING },
     message_content: { type: TEXT }
   });
 
-  Chat.belongsTo(Chatter, { foreign_key: 'chatter_id' });
-  Chat.belongsTo(Stream, { foreign_key: 'stream_id' });
+  Chat.belongsTo(Chatter, { foreignKey: 'chatter_id', as: 'chatter' });
+  Chat.belongsTo(Stream, { foreignKey: 'stream_id', as: 'stream' });
 
   return Chat;
 };

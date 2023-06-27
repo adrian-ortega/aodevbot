@@ -23,9 +23,12 @@ const sequelize = new Sequelize(DB_NAME, DB_USER, DB_PASSWORD, {
 const db = {};
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
-db.chatters = require('./Chatter')(sequelize, Sequelize);
-db.streams = require('./Stream')(sequelize, Sequelize);
-db.games = require('./Game')(sequelize, Sequelize);
-db.chat = require('./Chat')(sequelize, Sequelize);
+
+// Register models
+//
+db.Chatters = require('./Chatter')(sequelize, Sequelize);
+db.Streams = require('./Stream')(sequelize, Sequelize);
+db.Games = require('./Game')(sequelize, Sequelize);
+db.Chat = require('./Chat')(sequelize, Sequelize);
 
 module.exports = db;

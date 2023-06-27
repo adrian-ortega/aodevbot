@@ -1,8 +1,8 @@
 const db = require('../../models');
-const { Chatters } = db;
+const { Games } = db;
 
 exports.list = (req, res) => {
-  Chatters.findAll().then(data => {
+  Games.findAll().then(data => {
     res.send(data);
   }).catch(err => {
     res.status(500).send({
@@ -13,7 +13,7 @@ exports.list = (req, res) => {
 
 exports.detail = (req, res) => {
   const { id } = req.params;
-  Chatters.findByPk(id).then(data => {
+  Games.findByPk(id).then(data => {
     if (data) {
       res.send(data);
     } else {
@@ -29,19 +29,18 @@ exports.detail = (req, res) => {
 };
 
 exports.create = (req, res) => {
-  if (!req.body.twitch_id) {
+  if (!req.body.game_id) {
     return res.status(400).send({
       message: 'Content empty'
     });
   }
 
-  const chatter = {
-    twitch_id: req.body.twitch_id,
-    username: req.body.username || '',
-    display_name: req.body.display_name || ''
+  const game = {
+    game_id: req.body.game_id,
+    game_name: req.body.game_name || ''
   };
 
-  Chatters.create(chatter).then(data => {
+  Games.create(game).then(data => {
     res.send(data);
   }).catch(err => {
     res.status(500).send({
@@ -53,18 +52,18 @@ exports.create = (req, res) => {
 exports.update = (req, res) => {
   const { id } = req.params;
 
-  Chatters.update(req.body, {
+  Games.update(req.body, {
     where: { id }
   })
     .then(num => {
       if (num == 1) {
         res.send({
-          message: 'Chatter was updated successfully.'
+          message: 'Game was updated successfully.'
         });
       } else {
         res.send({
           num,
-          message: `Cannot update Chatter with id=${id}. ${num}, ${typeof num}`
+          message: `Cannot update Game with id=${id}. ${num}, ${typeof num}`
         });
       }
     })
@@ -77,18 +76,18 @@ exports.update = (req, res) => {
 
 exports.destroy = (req, res) => {
   const { id } = req.params;
-  Chatters
+  Games
     .destroy({
       where: { id }
     })
     .then(num => {
       if (num == 1) {
         res.send({
-          message: 'Chatter was deleted successfully!'
+          message: 'Game was deleted successfully!'
         });
       } else {
         res.send({
-          message: `Cannot delete Chatter with id=${id}.`
+          message: `Cannot delete Game with id=${id}.`
         });
       }
     })
