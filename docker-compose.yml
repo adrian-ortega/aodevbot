@@ -2,6 +2,7 @@ version: '3.8'
 
 services:
   mysqldb:
+    container_name: mysqldb
     image: mysql:5.7
     restart: unless-stopped
     env_file: ./.env
@@ -13,9 +14,10 @@ services:
     volumes:
       - db:/var/lib/mysql
   app:
+    container_name: app
     depends_on:
       - mysqldb
-    build: ./aodevbot
+    build: ./
     restart: unless-stopped
     env_file: ./.env
     ports:
@@ -28,6 +30,8 @@ services:
       - DB_PORT=$MYSQLDB_DOCKER_PORT
     stdin_open: true
     tty: true
+    volumes:
+      - './src:/var/app'
 
 volumes:
   db:

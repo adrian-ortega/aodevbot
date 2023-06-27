@@ -1,5 +1,7 @@
 module.exports = (app) => {
-  app.use('/api/chatters', require('../http/controllers/ChattersController'));
+  const chattersRouter = require('../http/routes/chatters');
+
+  app.use('/api/chatters', chattersRouter);
 
   app.get('/api', (req, res) => {
     res.json({

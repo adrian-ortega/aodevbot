@@ -4,8 +4,8 @@
   "main": "server.js",
   "scripts": {
     "nodemon": "nodemon ./server.js",
-    "serve": "npm install && npm run ./server.js",
-    "dev": "npm install && npm-run-all --parallel nodemon"
+    "serve": "npm run ./server.js",
+    "dev": "npm-run-all --parallel nodemon"
   },
   "contributors": [
     {
