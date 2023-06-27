@@ -14,7 +14,13 @@ exports.list = (req, res) => {
 exports.detail = (req, res) => {
   const { id } = req.params;
   Chatters.findByPk(id).then(data => {
-    res.send(data);
+    if (data) {
+      res.send(data);
+    } else {
+      res.status(404).send({
+        message: "Not found"
+      })
+    }
   }).catch(err => {
     res.status(500).send({
       message: err.message || 'Something went wrong'
@@ -45,7 +51,7 @@ exports.create = (req, res) => {
 };
 
 exports.update = (req, res) => {
-  const id = req.params.id;
+  const { id } = req.params;
 
   Chatters.update(req.body, {
     where: { id }
