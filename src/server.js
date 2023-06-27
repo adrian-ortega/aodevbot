@@ -12,7 +12,9 @@ app.use(express.urlencoded({ extended: true }));
 router(app);
 
 const db = require('./app/models');
-db.sequelize.sync({ force: true });
+db.sequelize.sync({
+  force: false
+});
 
 app.listen(PORT, () => {
   console.log(`STUFF IS UP AND RUNNING! http://${HOST}:${PORT}`);

@@ -15,5 +15,9 @@ module.exports = {
     min: 0,
     acquire: 30000,
     idle: 10000
-  }
+  },
+
+  // Twitch
+  TWITCH_CLIENT_ID: process.env.TWITCH_CLIENT_ID || '',
+  TWITCH_CLIENT_SECRET: process.env.TWITCH_CLIENT_SECRET || ''
 };
