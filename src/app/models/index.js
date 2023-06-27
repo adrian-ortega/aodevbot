@@ -24,5 +24,8 @@ const db = {};
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 db.chatters = require('./Chatter')(sequelize, Sequelize);
+db.streams = require('./Stream')(sequelize, Sequelize);
+db.games = require('./Game')(sequelize, Sequelize);
+db.chat = require('./Chat')(sequelize, Sequelize);
 
 module.exports = db;
