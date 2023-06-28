@@ -1,3 +1,4 @@
+const log = require('../log');
 const config = require('../../config');
 const client = require('axios');
 
@@ -14,9 +15,12 @@ exports.getAuthTokenFromCode = async (code, redirect_uri) => {
     });
     return data;
   } catch (err) {
-    console.log('Something went wrong', err.message);
-    return null;
+    log.error('error getAuthTokenFromCode', {
+      message: err.message
+    });
   }
+
+  return null;
 }
 
 exports.getAuthURL = (isBroadcaster = false, redirect_uri) => {
@@ -32,6 +36,8 @@ exports.getAuthURL = (isBroadcaster = false, redirect_uri) => {
     scopes.push('channel:read:hype_train');
     scopes.push('channel:manage:broadcast');
     scopes.push('channel:manage:redemptions');
+    scopes.push('chat:read');
+    scopes.push('chat:edit');
     scopes.push('user:read:subscriptions');
     scopes.push('user:read:follows');
   }

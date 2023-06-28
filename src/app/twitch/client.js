@@ -1,3 +1,4 @@
+const log = require('../log');
 const axios = require('axios');
 const tokens = require('./tokens');
 const { TWITCH_CLIENT_ID } = require('../../config');
@@ -7,10 +8,9 @@ const instance = axios.create({
 
 const requestAccessTokenInterceptor = async function (config) {
   await tokens.load();
-  const accessToken = await tokens.getAccessToken();
+  const accessToken = tokens.getAccessToken();
   config.headers['Client-ID'] = TWITCH_CLIENT_ID;
   config.headers['Authorization'] = `Bearer ${accessToken}`;
-
   return config;
 }
 

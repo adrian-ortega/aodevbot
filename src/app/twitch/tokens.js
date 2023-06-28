@@ -1,19 +1,36 @@
-const { Tokens } = require('../models');
-let chatter_id = 0;
-let token, token_id;
+const log = require('../log');
+const { Tokens, Sequelize } = require('../models');
 const token_type = 'twitch';
+
+let chatter_id = 0;
+let access_token, refresh_token, token_id;
 
 exports.load = async () => {
   try {
-    const results = await Tokens.findAll({ where: { token_type } })
+
+    const results = await Tokens.findAll({
+      where: {
+        token_type,
+        expires: {
+          [Sequelize.Op.gt]: new Date()
+        }
+      },
+      limit: 1,
+      order: [['expires', 'DESC']]
+    });
     const Token = results.shift();
     if (Token) {
-      token = Token.token;
+      access_token = Token.access_token;
+      refresh_token = Token.refresh_token;
       token_id = Token.id;
     }
   } catch (err) {
-    console.log('Something went wrong', err);
+    log.error('Twitch.tokens.load', {
+      message: err.message
+    });
   }
+
+  return access_token;
 }
 
 exports.updateAccessTokenOwner = async (chatter_id) => {
@@ -26,14 +43,26 @@ exports.updateAccessTokenOwner = async (chatter_id) => {
   return null;
 }
 
-exports.getAccessToken = () => token;
+exports.getAccessToken = () => access_token;
 
-exports.setAccessToken = async (data, expires_in, scope) => {
+exports.getRefreshToken = () => refresh_token;
+
+exports.setAccessToken = async ({ access_token, refresh_token }, expires, scope) => {
   const results = await Tokens.findOrCreate({
-    where: { chatter_id, token_type },
-    defaults: { chatter_id, token_type, token: data, expires_in, scope }
+    where: {
+      chatter_id,
+      token_type
+    },
+    defaults: {
+      chatter_id,
+      token_type,
+      access_token,
+      refresh_token,
+      expires,
+      scope
+    }
   });
   const Token = results.shift();
-  token = Token.token;
+  access_token = Token.token;
   token_id = Token.id;
 };

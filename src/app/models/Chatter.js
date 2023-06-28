@@ -5,6 +5,7 @@ const ChatterModel = (sequelize, Sequelize) => {
     twitch_id: { type: INTEGER, primaryKey: true },
     username: { type: STRING },
     display_name: { type: STRING },
+    profile_image_url: { type: STRING },
     subscriber: { type: BOOLEAN, defaultValue: false },
     mod: { type: BOOLEAN, defaultValue: false },
     points: { type: BIGINT, defaultValue: 0 }

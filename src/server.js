@@ -1,4 +1,5 @@
 const { PORT, HOST } = require('./config.js');
+const log = require('./app/log');
 const express = require('express');
 const router = require('./app/router');
 const app = express();
@@ -13,9 +14,13 @@ router(app);
 
 const db = require('./app/models');
 db.sequelize.sync({
+  logging: false,
   force: false
 });
 
 app.listen(PORT, () => {
-  console.log(`STUFF IS UP AND RUNNING! http://${HOST}:${PORT}`);
+  console.clear();
+  require('./app/twitch').createChatClient();
+  log.debug('STUFF IS UP AND RUNNING!');
+  log.info(`http://${HOST}:${PORT}\n`);
 });

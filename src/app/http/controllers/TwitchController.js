@@ -1,4 +1,6 @@
+const log = require('../../log');
 const config = require('../../../config');
+const moment = require('moment');
 const redirect_uri = `http://${config.HOST}:${config.PORT}/api/twitch/authenticate/confirm`;
 
 exports.authenticate = (req, res) => {
@@ -15,13 +17,27 @@ exports.authConfirm = async (req, res) => {
   const accessTokenResponse = await Twitch.getAuthTokenFromCode(code, redirect_uri);
   if (!accessTokenResponse) {
     return res.status(400).send({
-      message: "Invalid Access Token"
+      message: "Invalid Access Token",
+      authenticated: false
     });
   }
 
-  const { access_token, expires_in, scope } = accessTokenResponse;
-  await Twitch.setAccessToken(access_token, expires_in, scope.join(' '));
+  const { access_token, refresh_token, expires_in, scope } = accessTokenResponse;
+  const expires = moment().add(expires_in, 'seconds');
+  await Twitch.setAccessToken(
+    { access_token, refresh_token },
+    expires,
+    scope.join(' ')
+  );
+
   const twitchUserData = await Twitch.getUser();
+  if (!twitchUserData) {
+    return res.status(401).send({
+      message: "Cannot load Twitch user",
+      authenticated: false
+    })
+  }
+
   const chatterResults = await Chatters.findOrCreate({
     where: { twitch_id: twitchUserData.id, username: twitchUserData.login },
     defaults: {
@@ -35,9 +51,10 @@ exports.authConfirm = async (req, res) => {
     await Twitch.updateAccessTokenOwner(Chatter.id);
   }
 
-  // @TODO Associate access token with Chatter
-
-  return res.send({ authenticated: true });
+  return res.send({
+    message: `User ${Chatter.twitch_id} Authenticated`,
+    authenticated: true
+  });
 }
 
 exports.getUser = async (req, res) => {

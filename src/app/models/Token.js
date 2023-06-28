@@ -1,10 +1,11 @@
 const TokenModel = (sequelize, Sequelize) => {
-  const { INTEGER, STRING, TEXT } = Sequelize;
+  const { INTEGER, STRING, TEXT, DATE } = Sequelize;
   const Token = sequelize.define('Token', {
     chatter_id: { type: INTEGER },
-    token: { type: TEXT },
+    access_token: { type: TEXT },
+    refresh_token: { type: TEXT },
     token_type: { type: STRING },
-    expires_in: { type: INTEGER },
+    expires: { type: DATE },
     scope: { type: STRING },
   });
   return Token;
