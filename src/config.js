@@ -1,6 +1,8 @@
 require('dotenv').config();
 
 module.exports = {
+  DEBUG: process.env.DEBUG || false,
+  DEFAULT_TIMEZONE: process.env.DEFAULT_TIMEZONE || 'America/Los_Angeles',
   PORT: process.env.NODE_LOCAL_PORT || 8080,
   HOST: process.env.HOST || 'localhost',
 
@@ -18,6 +20,7 @@ module.exports = {
   },
 
   // Twitch
+  TWITCH_USERNAME: process.env.TWITCH_USERNAME || 'aodev',
   TWITCH_CLIENT_ID: process.env.TWITCH_CLIENT_ID || '',
   TWITCH_CLIENT_SECRET: process.env.TWITCH_CLIENT_SECRET || ''
 };
