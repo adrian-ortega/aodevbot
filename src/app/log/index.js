@@ -1,0 +1,72 @@
+const moment = require('moment-timezone');
+const { DEFAULT_TIMEZONE } = require('../../config');
+const LOGGER_FATAL = 0;
+const LOGGER_ERROR = 1;
+const LOGGER_WARN = 2;
+const LOGGER_INFO = 3;
+const LOGGER_DEBUG = 4;
+const LOGGER_TRACE = 5;
+const LEVELS = {
+  fatal: LOGGER_FATAL,
+  error: LOGGER_ERROR,
+  warn: LOGGER_WARN,
+  info: LOGGER_INFO,
+  debug: LOGGER_DEBUG,
+  trace: LOGGER_TRACE
+};
+const LEVEL_NAMES = {
+  [LOGGER_FATAL]: 'Fatal',
+  [LOGGER_ERROR]: 'Error',
+  [LOGGER_WARN]: 'Warning',
+  [LOGGER_INFO]: 'Info',
+  [LOGGER_DEBUG]: 'Debug',
+  [LOGGER_TRACE]: 'Trace',
+};
+
+const handlers = [
+  require('./handler')
+]
+
+const log = ({ message, context = undefined, type = LOGGER_INFO }) => {
+  const timestamp = `[${moment().tz(DEFAULT_TIMEZONE).format('h:mm A')}]`;
+  for (let i = 0; i < handlers.length; i++) {
+    handlers[i].apply(this, [{
+      message,
+      context,
+      type,
+      levels: LEVELS,
+      levelNames: LEVEL_NAMES,
+      timestamp
+    }]);
+  }
+}
+
+const fatal = (message, context) => {
+  log({ message, context, type: LEVELS.fatal });
+};
+const error = (message, context) => {
+  log({ message, context, type: LEVELS.error });
+};
+const warn = (message, context) => {
+  log({ message, context, type: LEVELS.warn });
+};
+const info = (message, context) => {
+  log({ message, context, type: LEVELS.info });
+};
+const debug = (message, context) => {
+  log({ message, context, type: LEVELS.debug });
+};
+const trace = (message, context) => {
+  log({ message, context, type: LEVELS.trace });
+};
+
+module.exports = {
+  fatal,
+  error,
+  warn,
+  info,
+  debug,
+  trace,
+  LEVELS,
+  LEVEL_NAMES
+}
