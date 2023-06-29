@@ -5,5 +5,6 @@ const registeredCommands = [
 ];
 
 module.exports = (commands) => {
+  commands.clear();
   registeredCommands.forEach(command => commands.append(command));
 };

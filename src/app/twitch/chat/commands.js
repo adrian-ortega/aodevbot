@@ -1,6 +1,7 @@
 const log = require('../../log');
 const { getValue, isString, isArray, objectHasProp, objectHasMethod } = require('../../support');
-const data = [];
+
+let data = [];
 
 const validate = (cmd) => objectHasProp(cmd, 'name') && objectHasMethod(cmd, 'handle')
 const createGenericCommand = (command, message) => {
@@ -70,6 +71,10 @@ exports.append = (command, message = null) => {
   }
 
   data.push(command);
+}
+
+exports.clear = () => {
+  data = [];
 }
 
 exports.getAll = () => {
