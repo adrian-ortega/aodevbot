@@ -1,10 +1,13 @@
 const router = require('express').Router();
 const mainController = require('../controllers/TwitchController');
 const authController = require('../controllers/TwitchAuthController');
-const webhookController = require('../controllers/TwitchWebhookController');
+const streamsController = require('../controllers/TwitchStreamsController');
+// const webhookController = require('../controllers/TwitchWebhookController');
 
 router.get('/authenticate', authController.authenticate);
 router.get('/authenticate/confirm', authController.authConfirm);
+
+router.get('/streams/stream', streamsController.stream);
 
 router.get('/user/:username', mainController.getUser);
 

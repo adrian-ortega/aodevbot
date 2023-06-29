@@ -38,11 +38,17 @@ exports.authConfirm = async (req, res) => {
   }
 
   const chatterResults = await Chatters.findOrCreate({
-    where: { twitch_id: twitchUserData.id, username: twitchUserData.login },
+    where: {
+      twitch_id: twitchUserData.id,
+      username: twitchUserData.login
+    },
     defaults: {
       twitch_id: twitchUserData.id,
       username: twitchUserData.login,
-      display_name: twitchUserData.display_name
+      display_name: twitchUserData.display_name,
+      mod: true,
+      subscriber: true,
+      broadcaster: true
     }
   });
   const Chatter = chatterResults.length > 0 ? chatterResults.shift() : null;

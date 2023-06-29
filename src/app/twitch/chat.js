@@ -39,6 +39,7 @@ const getChatterFromChatState = async (state) => {
 
 const logMessage = async (message_content, state) => {
   const stream_id = await getStreamId();
+  console.log(stream_id);
   try {
     const Chatter = await getChatterFromChatState(state);
     if (Chatter) {
@@ -46,7 +47,7 @@ const logMessage = async (message_content, state) => {
         chatter_id: state[USER_ID],
         stream_id,
         message_content,
-        createdAt: new Date(parseInt(state[TMI_SENT_STAMP], 10))
+        created_at: new Date(parseInt(state[TMI_SENT_STAMP], 10))
       });
     }
   } catch (err) {
@@ -66,7 +67,7 @@ const onJoin = async (channel, user, self) => {
     return log.success('Connected', null, 'Twitch Chat');
   }
 
-  log.success(`Chatter: ${chalk.yellowBright(user)} has joined.`, null, 'Twitch Chat');
+  log.debug(`Chatter: ${chalk.cyan(user)} has joined.`, null, 'Twitch Chat');
 
   // @TODO send event to Chat log?
 }

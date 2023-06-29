@@ -11,6 +11,11 @@ const sequelize = new Sequelize(DB_NAME, DB_USER, DB_PASSWORD, {
     host: DB_HOST,
     dialect: DB_DIALECT,
     logging: false,
+    define: {
+        createdAt: 'created_at',
+        updatedAt: 'updated_at',
+        deletedAt: 'deleted_at'
+    },
     pool: {
         max: DB_POOL.max,
         min: DB_POOL.min,

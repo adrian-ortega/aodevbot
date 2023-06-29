@@ -21,7 +21,7 @@ exports.create = (req, res) => {
     // @TODO pull this live!
     stream_id: 1,
     message_content: req.body.message_content,
-    createdAt: req.body.created_at
+    created_at: req.body.created_at
   };
 
   Chat.create(chat).then(data => {
