@@ -1,6 +1,7 @@
 const log = require('../log');
 const chalk = require('chalk');
 const commands = require('./chat/commands');
+const initCommands = require('./chat/commands/dictionary');
 const events = require('./chat/events');
 const { loadAccessToken } = require('./tokens');
 const { refreshAccessToken } = require('./auth');
@@ -60,14 +61,17 @@ const addEvent = (...args) => events.append(...args);
 
 const onJoin = async (channel, user, self) => {
   if (self && !tmiConnected) {
+    await initCommands(commands);
     tmiConnected = true;
     return log.success('Chat client connected');
   }
 
-  log.success(`Chatter: ${chalk.yellow(user)} has joined.`);
+  log.success(`Chatter: ${chalk.yellowBright(user)} has joined.`);
 
   // @TODO send event to Chat log?
 }
+
+const triggerSelfEvents = () => { };
 
 const onMessage = async (channel, state, message, self) => {
   try {
@@ -76,14 +80,20 @@ const onMessage = async (channel, state, message, self) => {
     }
     await logMessage(message, state);
     current_message = { message, state };
-    if (!commands.maybeRun(channel, state, message)) {
-      events.maybeRun(channel, state, message)
+    const chatClient = {
+      client,
+      commands,
+      events
+    };
+    if (!commands.maybeRun(channel, state, message, chatClient)) {
+      // @TODO implement events
+      events.maybeRun(channel, state, message, chatClient)
     }
   } catch (err) {
     log.error('Twitch.chat.client.onMessage', {
       message: err.message,
       err
-    })
+    });
   }
 };
 
@@ -98,6 +108,9 @@ const getTwitchAuthIdentity = () => {
     username: TWITCH_USERNAME,
     password: async () => {
       const token = await loadAccessToken();
+      if (!token) {
+        throw new Error('Twitch access_token not found');
+      }
       return `oauth:${token.access_token}`;
     }
   }
