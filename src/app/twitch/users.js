@@ -12,7 +12,6 @@ exports.getUser = async (id) => {
     }
     const { data: responseData } = await client.get('/helix/users', { params });
     const { data } = responseData;
-    log.debug('Twitch.getUser', { data });
     return data.length > 0 ? data[0] : null;
   } catch (err) {
     log.error('Twitch.getUser error', {

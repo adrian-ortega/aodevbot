@@ -5,7 +5,7 @@ const initCommands = require('./chat/commands/dictionary');
 const events = require('./chat/events');
 const { loadAccessToken } = require('./tokens');
 const { refreshAccessToken } = require('./auth');
-const { getStreamId } = require('./stream');
+const { getStreamId, syncStream } = require('./stream');
 
 const { Chat, Chatters } = require('../models');
 const { isString } = require('../support');
@@ -39,7 +39,6 @@ const getChatterFromChatState = async (state) => {
 
 const logMessage = async (message_content, state) => {
   const stream_id = await getStreamId();
-  console.log(stream_id);
   try {
     const Chatter = await getChatterFromChatState(state);
     if (Chatter) {
@@ -61,6 +60,7 @@ const addCommand = (...args) => commands.append(...args)
 const addEvent = (...args) => events.append(...args);
 
 const onJoin = async (channel, user, self) => {
+  await syncStream();
   if (self && !tmiConnected) {
     await initCommands(commands);
     tmiConnected = true;
@@ -68,7 +68,6 @@ const onJoin = async (channel, user, self) => {
   }
 
   log.debug(`Chatter: ${chalk.cyan(user)} has joined.`, null, 'Twitch Chat');
-
   // @TODO send event to Chat log?
 }
 
