@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   mysqldb:
-    container_name: mysqldb
+    container_name: aodevbot_db
     image: mysql:5.7
     restart: unless-stopped
     env_file: ./.env
@@ -14,7 +14,7 @@ services:
     volumes:
       - db:/var/lib/mysql
   app:
-    container_name: app
+    container_name: aodevbot_app
     depends_on:
       - mysqldb
     build: ./
@@ -32,6 +32,12 @@ services:
     tty: true
     volumes:
       - './src:/var/app'
+  adminer:
+    container_name: aodevbot_adminer
+    image: adminer
+    restart: always
+    ports:
+      - 8091:8080
 
 volumes:
   db:

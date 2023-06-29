@@ -30,7 +30,7 @@ const handlers = [
   require('./handler')
 ]
 
-const log = ({ message, context = undefined, type = LOGGER_INFO }) => {
+const log = ({ message, context = undefined, type = LOGGER_INFO, prefix }) => {
   const timestamp = `[${moment().tz(DEFAULT_TIMEZONE).format('h:mm A')}]`;
   for (let i = 0; i < handlers.length; i++) {
     handlers[i].apply(this, [{
@@ -39,32 +39,33 @@ const log = ({ message, context = undefined, type = LOGGER_INFO }) => {
       type,
       levels: LEVELS,
       levelNames: LEVEL_NAMES,
-      timestamp
+      timestamp,
+      prefix
     }]);
   }
 }
 
-const fatal = (message, context) => {
-  log({ message, context, type: LEVELS.fatal });
+const fatal = (message, context, prefix) => {
+  log({ message, context, type: LEVELS.fatal, prefix });
 };
-const error = (message, context) => {
-  log({ message, context, type: LEVELS.error });
+const error = (message, context, prefix) => {
+  log({ message, context, type: LEVELS.error, prefix });
 };
-const warn = (message, context) => {
-  log({ message, context, type: LEVELS.warn });
+const warn = (message, context, prefix) => {
+  log({ message, context, type: LEVELS.warn, prefix });
 };
-const info = (message, context) => {
-  log({ message, context, type: LEVELS.info });
+const info = (message, context, prefix) => {
+  log({ message, context, type: LEVELS.info, prefix });
 };
-const debug = (message, context) => {
-  log({ message, context, type: LEVELS.debug });
+const debug = (message, context, prefix) => {
+  log({ message, context, type: LEVELS.debug, prefix });
 };
-const trace = (message, context) => {
-  log({ message, context, type: LEVELS.trace });
+const trace = (message, context, prefix) => {
+  log({ message, context, type: LEVELS.trace, prefix });
 };
 
-const success = (message, context) => {
-  log({ message, context, type: LEVELS.success })
+const success = (message, context, prefix) => {
+  log({ message, context, type: LEVELS.success, prefix });
 }
 
 module.exports = {

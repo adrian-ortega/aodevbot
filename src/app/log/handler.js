@@ -1,7 +1,7 @@
 const { DEBUG } = require('../../config');
 const chalk = require('chalk');
 
-module.exports = ({ message, context, type, levels, timestamp }) => {
+module.exports = ({ message, context, type, levels, timestamp, prefix }) => {
   switch (type) {
     case levels.fatal:
     case levels.error:
@@ -18,7 +18,7 @@ module.exports = ({ message, context, type, levels, timestamp }) => {
       break;
   }
 
-  const args = [`${timestamp} ${message}`];
+  const args = [`${chalk.gray(timestamp)}${prefix ? ` ${chalk.blue(`[${prefix}]`)}` : ''} ${message}`];
 
   if (DEBUG && context) {
     args.push(context);

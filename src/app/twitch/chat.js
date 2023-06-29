@@ -63,10 +63,10 @@ const onJoin = async (channel, user, self) => {
   if (self && !tmiConnected) {
     await initCommands(commands);
     tmiConnected = true;
-    return log.success('Chat client connected');
+    return log.success('Connected', null, 'Twitch Chat');
   }
 
-  log.success(`Chatter: ${chalk.yellowBright(user)} has joined.`);
+  log.success(`Chatter: ${chalk.yellowBright(user)} has joined.`, null, 'Twitch Chat');
 
   // @TODO send event to Chat log?
 }
