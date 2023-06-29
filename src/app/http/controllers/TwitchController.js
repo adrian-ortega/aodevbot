@@ -48,7 +48,7 @@ exports.authConfirm = async (req, res) => {
   });
   const Chatter = chatterResults.length > 0 ? chatterResults.shift() : null;
   if (Chatter) {
-    await Twitch.updateAccessTokenOwner(Chatter.id);
+    await Twitch.setTokenOwner(Chatter.id);
   }
 
   return res.send({

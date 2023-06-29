@@ -10,6 +10,9 @@ module.exports = ({ message, context, type, levels, timestamp }) => {
     case levels.warn:
       message = chalk.yellow(message);
       break;
+    case levels.success:
+      message = chalk.green(message);
+      break;
     case levels.info:
       message = chalk.cyan(message);
       break;

@@ -19,7 +19,7 @@ db.sequelize.sync({
 });
 
 app.listen(PORT, () => {
-  console.clear();
+  // console.clear();
   require('./app/twitch').createChatClient();
   log.debug('STUFF IS UP AND RUNNING!');
   log.info(`http://${HOST}:${PORT}\n`);

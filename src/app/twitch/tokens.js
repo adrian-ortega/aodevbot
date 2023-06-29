@@ -1,11 +1,13 @@
 const log = require('../log');
-const { Tokens, Sequelize } = require('../models');
+const { Chatters, Tokens, Sequelize } = require('../models');
 const token_type = 'twitch';
 
+// @TODO Update this to pull the chatter id from token
 let chatter_id = 0;
-let access_token, refresh_token, token_id;
 
-exports.load = async () => {
+let currentToken;
+
+exports.loadAccessToken = async () => {
   try {
 
     const results = await Tokens.findAll({
@@ -18,34 +20,37 @@ exports.load = async () => {
       limit: 1,
       order: [['expires', 'DESC']]
     });
-    const Token = results.shift();
-    if (Token) {
-      access_token = Token.access_token;
-      refresh_token = Token.refresh_token;
-      token_id = Token.id;
-    }
+    currentToken = results.shift();
   } catch (err) {
     log.error('Twitch.tokens.load', {
       message: err.message
     });
   }
 
-  return access_token;
+  return currentToken;
 }
 
-exports.updateAccessTokenOwner = async (chatter_id) => {
-  if (token_id) {
+exports.setTokenOwner = async (chatter_id) => {
+  if (currentToken) {
     return Tokens.update({ chatter_id }, {
-      where: { id: token_id }
+      where: { id: currentToken.id }
     });
   }
 
   return null;
 }
 
-exports.getAccessToken = () => access_token;
+exports.getTokenOwner = async () => {
+  await this.loadAccessToken();
+  console.log({ currentToken });
+  return Chatters.findByPk(currentToken.chatter_id);
+};
 
-exports.getRefreshToken = () => refresh_token;
+exports.getToken = () => currentToken;
+
+exports.getAccessToken = () => currentToken.access_token;
+
+exports.getRefreshToken = () => currentToken.refresh_token;
 
 exports.setAccessToken = async ({ access_token, refresh_token }, expires, scope) => {
   const results = await Tokens.findOrCreate({
@@ -62,7 +67,5 @@ exports.setAccessToken = async ({ access_token, refresh_token }, expires, scope)
       scope
     }
   });
-  const Token = results.shift();
-  access_token = Token.token;
-  token_id = Token.id;
+  currentToken = results.shift();
 };

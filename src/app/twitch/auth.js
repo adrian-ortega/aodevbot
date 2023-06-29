@@ -1,8 +1,22 @@
 const log = require('../log');
 const config = require('../../config');
 const client = require('axios');
+const { loadAccessToken, getAccessToken, getTokenOwner } = require('./tokens');
+const { getUser } = require('./users');
 
-exports.refreshAccessToken = () => { }
+exports.refreshAccessToken = async () => {
+  try {
+    await loadAccessToken();
+    const tokenOwner = await getTokenOwner();
+    console.log(tokenOwner);
+    // const data = await getUser();
+  } catch (err) {
+    log.error('refreshAccessToken', err);
+    return false;
+  }
+
+  return true;
+}
 
 exports.getAuthTokenFromCode = async (code, redirect_uri) => {
   try {

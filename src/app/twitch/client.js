@@ -7,7 +7,7 @@ const instance = axios.create({
 });
 
 const requestAccessTokenInterceptor = async function (config) {
-  await tokens.load();
+  await tokens.loadAccessToken();
   const accessToken = tokens.getAccessToken();
   config.headers['Client-ID'] = TWITCH_CLIENT_ID;
   config.headers['Authorization'] = `Bearer ${accessToken}`;

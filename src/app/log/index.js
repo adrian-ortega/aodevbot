@@ -6,13 +6,15 @@ const LOGGER_WARN = 2;
 const LOGGER_INFO = 3;
 const LOGGER_DEBUG = 4;
 const LOGGER_TRACE = 5;
+const LOGGER_SUCCESS = 6;
 const LEVELS = {
   fatal: LOGGER_FATAL,
   error: LOGGER_ERROR,
   warn: LOGGER_WARN,
   info: LOGGER_INFO,
   debug: LOGGER_DEBUG,
-  trace: LOGGER_TRACE
+  trace: LOGGER_TRACE,
+  success: LOGGER_SUCCESS,
 };
 const LEVEL_NAMES = {
   [LOGGER_FATAL]: 'Fatal',
@@ -21,6 +23,7 @@ const LEVEL_NAMES = {
   [LOGGER_INFO]: 'Info',
   [LOGGER_DEBUG]: 'Debug',
   [LOGGER_TRACE]: 'Trace',
+  [LOGGER_SUCCESS]: 'Success'
 };
 
 const handlers = [
@@ -60,6 +63,10 @@ const trace = (message, context) => {
   log({ message, context, type: LEVELS.trace });
 };
 
+const success = (message, context) => {
+  log({ message, context, type: LEVELS.success })
+}
+
 module.exports = {
   fatal,
   error,
@@ -67,6 +74,7 @@ module.exports = {
   info,
   debug,
   trace,
+  success,
   LEVELS,
   LEVEL_NAMES
 }
