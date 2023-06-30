@@ -14,7 +14,9 @@ const sequelize = new Sequelize(DB_NAME, DB_USER, DB_PASSWORD, {
     define: {
         createdAt: 'created_at',
         updatedAt: 'updated_at',
-        deletedAt: 'deleted_at'
+        deletedAt: 'deleted_at',
+        charset: 'utf8mb4',
+        collate: 'utf8mb4_unicode_ci',
     },
     pool: {
         max: DB_POOL.max,
