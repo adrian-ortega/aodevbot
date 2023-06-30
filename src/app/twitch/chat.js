@@ -6,6 +6,7 @@ const events = require('./chat/events');
 const { loadAccessToken } = require('./tokens');
 const { refreshAccessToken } = require('./auth');
 const { getStreamId, syncStream } = require('./stream');
+const { getUser } = require('./users');
 
 const { Chat, Chatters } = require('../models');
 const { isString } = require('../support');
@@ -34,7 +35,14 @@ const getChatterFromChatState = async (state) => {
       subscriber: state[USER_IS_SUB],
     }
   });
-  return chatterResults.length > 0 ? chatterResults[0] : null;
+  const Chatter = chatterResults.length > 0 ? chatterResults[0] : null;
+  if (Chatter && Chatter.subscriber !== state[USER_IS_MOD]) {
+    Chatter.update({
+      mod: state[USER_IS_MOD],
+      subscriber: state[USER_IS_SUB],
+    })
+  }
+  return Chatter;
 };
 
 const logMessage = async (message_content, state) => {
@@ -59,15 +67,28 @@ const logMessage = async (message_content, state) => {
 const addCommand = (...args) => commands.append(...args)
 const addEvent = (...args) => events.append(...args);
 
-const onJoin = async (channel, user, self) => {
+const onJoin = async (channel, username, self) => {
   await syncStream();
+
+  // Check if chatter exists
+  const Chatter = await Chatters.findOne({ where: { username } });
+  if (!Chatter) {
+    const twitchUserData = await getUser(username);
+    await Chatters.create({
+      twitch_id: twitchUserData.id,
+      username: twitchUserData.login,
+      display_name: twitchUserData.display_name,
+      profile_image_url: twitchUserData.profile_image_url
+    });
+  }
+
   if (self && !tmiConnected) {
     await initCommands(commands);
     tmiConnected = true;
     return log.success('Connected', null, 'Twitch Chat');
   }
 
-  log.debug(`Chatter: ${chalk.cyan(user)} has joined.`, null, 'Twitch Chat');
+  log.debug(`Chatter: ${chalk.cyan(username)} has joined.`, null, 'Twitch Chat');
   // @TODO send event to Chat log?
 }
 

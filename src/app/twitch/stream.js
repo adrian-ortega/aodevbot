@@ -41,12 +41,10 @@ const getStreamId = async () => {
 let syncing = false;
 const syncStream = async () => {
   if (syncing) {
-    // @TODO wait and retry?
-    return;
+    return false;
   }
 
   syncing = true;
-  log.debug('Syncing', null, 'Twitch Streams');
   const stream = await getBroadcasterStreams(true);
   if (!stream || !stream.id) {
     log.warn('Stream is not live', null, 'Twitch Streams');
@@ -77,6 +75,7 @@ const syncStream = async () => {
   });
 
   syncing = false;
+
   // @TODO implement counters;
 };
 
