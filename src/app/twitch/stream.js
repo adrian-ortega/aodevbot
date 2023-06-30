@@ -1,7 +1,8 @@
 const log = require('../log');
-const { getBroadcaster } = require('../broadcaster');
-const { pregMatchAll } = require('../support/strings');
 const client = require('./client');
+const { FIVE_MINUTES } = require('../support/time');
+const { pregMatchAll } = require('../support/strings');
+const { getBroadcaster } = require('../broadcaster');
 const { Streams, Games } = require('../models');
 
 const getStreams = async (user_login) => {
@@ -79,9 +80,38 @@ const syncStream = async () => {
   // @TODO implement counters;
 };
 
+const getStreamChatters = async () => {
+  try {
+    const broadcaster = await getBroadcaster();
+    const { data } = await client.get(`/helix/chat/chatters`, {
+      params: {
+        broadcaster_id: broadcaster.twitch_id,
+        moderator_id: broadcaster.twitch_id
+      }
+    })
+    return data;
+  } catch (err) {
+    log.error('getStreamChatters', { message: err.message }, 'Twitch Streams');
+  }
+
+  return [];
+}
+
+let streamSyncId;
+
+const initStreamSync = () => {
+  const sync = async () => syncStream().then(() => {
+    streamSyncId = setTimeout(sync, FIVE_MINUTES);
+  });
+  clearTimeout(streamSyncId);
+  sync();
+}
+
 module.exports = {
+  initStreamSync,
   getStreamId,
   getStreams,
+  getStreamChatters,
   getBroadcasterStreams,
   syncStream,
 }

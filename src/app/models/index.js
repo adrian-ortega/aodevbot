@@ -35,6 +35,7 @@ db.Streams = require('./Stream')(sequelize, Sequelize);
 db.Games = require('./Game')(sequelize, Sequelize);
 db.Chat = require('./Chat')(sequelize, Sequelize);
 db.ChatPoints = require('./ChatPoints')(sequelize, Sequelize);
+db.Watchtime = require('./Watchtime')(sequelize, Sequelize);
 db.Tokens = require('./Token')(sequelize, Sequelize);
 
 module.exports = db;

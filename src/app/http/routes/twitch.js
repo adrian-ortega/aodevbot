@@ -10,6 +10,7 @@ router.get('/authenticate/confirm', authController.authConfirm);
 router.get('/streams/stream', streamsController.stream);
 
 router.get('/user/:username', mainController.getUser);
+router.get('/chat/chatters', mainController.getChatters);
 
 // router.get('/webhooks/status', webhookController.status);
 // router.get('/webhooks/handle', webhookController.handleWebhook);

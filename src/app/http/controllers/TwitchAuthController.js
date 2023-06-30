@@ -1,4 +1,5 @@
 const config = require('../../../config');
+const { reconnectChatClient } = require('../../twitch/chat');
 const moment = require('moment');
 const redirect_uri = `http://${config.HOST}:${config.PORT}/api/twitch/authenticate/confirm`;
 
@@ -46,6 +47,7 @@ exports.authConfirm = async (req, res) => {
       twitch_id: twitchUserData.id,
       username: twitchUserData.login,
       display_name: twitchUserData.display_name,
+      profile_image_url: twitchUserData.profile_image_url,
       mod: true,
       subscriber: true,
       broadcaster: true
@@ -55,6 +57,8 @@ exports.authConfirm = async (req, res) => {
   if (Chatter) {
     await Twitch.setTokenOwner(Chatter.id);
   }
+
+  await reconnectChatClient();
 
   return res.send({
     message: `User ${Chatter.twitch_id} Authenticated`,

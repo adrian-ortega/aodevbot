@@ -5,7 +5,7 @@ const ChatPointsModel = (sequelize, Sequelize) => {
     id: { type: INTEGER, primaryKey: true, autoIncrement: true },
     stream_id: { type: BIGINT },
     chatter_id: { type: BIGINT },
-    points: { type: INTEGER },
+    points: { type: INTEGER, defaultValue: 0 },
     note: { type: STRING }
   });
 

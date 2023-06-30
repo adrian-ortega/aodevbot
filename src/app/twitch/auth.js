@@ -45,6 +45,7 @@ exports.getAuthURL = (isBroadcaster = false, redirect_uri) => {
 
   if (isBroadcaster) {
     scopes.push('bits:read');
+    scopes.push('moderator:read:chatters');
     scopes.push('analytics:read:games');
     scopes.push('channel:read:subscriptions');
     scopes.push('channel:read:hype_train');

@@ -1,14 +1,15 @@
 const log = require('../log');
+const logPrefix = 'Twitch Chat';
 const chalk = require('chalk');
 const commands = require('./chat/commands');
 const initCommands = require('./chat/commands/dictionary');
 const events = require('./chat/events');
+const { Chat, Chatters } = require('../models');
+const { initPointsSync } = require('./chat/points');
 const { loadAccessToken } = require('./tokens');
 const { refreshAccessToken } = require('./auth');
-const { getStreamId, syncStream } = require('./stream');
+const { getStreamId, initStreamSync } = require('./stream');
 const { getUser } = require('./users');
-
-const { Chat, Chatters } = require('../models');
 const { isString } = require('../support');
 const { TWITCH_USERNAME } = require('../../config');
 const { USER_ID, USER_IS_SUB, USER_IS_MOD, USER_USERNAME, USER_DISPLAY_NAME } = require('./chat/state-keys');
@@ -58,9 +59,9 @@ const logMessage = async (message_content, state) => {
       });
     }
   } catch (err) {
-    log.error('Twitch.chat.logMessage', {
+    log.error('logMessage', {
       message: err.message
-    })
+    }, logPrefix)
   }
 }
 
@@ -68,8 +69,6 @@ const addCommand = (...args) => commands.append(...args)
 const addEvent = (...args) => events.append(...args);
 
 const onJoin = async (channel, username, self) => {
-  await syncStream();
-
   // Check if chatter exists
   const Chatter = await Chatters.findOne({ where: { username } });
   if (!Chatter) {
@@ -84,11 +83,13 @@ const onJoin = async (channel, username, self) => {
 
   if (self && !tmiConnected) {
     await initCommands(commands);
+    await initStreamSync();
+    await initPointsSync();
     tmiConnected = true;
-    return log.success('Connected', null, 'Twitch Chat');
+    return log.success('Connected', null, logPrefix);
   }
 
-  log.debug(`Chatter: ${chalk.cyan(username)} has joined.`, null, 'Twitch Chat');
+  log.debug(`Chatter ${chalk.cyan(username)} has joined.`, null, logPrefix);
   // @TODO send event to Chat log?
 }
 
@@ -111,10 +112,10 @@ const onMessage = async (channel, state, message, self) => {
       events.maybeRun(channel, state, message, chatClient)
     }
   } catch (err) {
-    log.error('Twitch.chat.client.onMessage', {
+    log.error('onMessage', {
       message: err.message,
       err
-    });
+    }, logPrefix);
   }
 };
 
@@ -154,30 +155,35 @@ const createChatClient = async () => {
     await client.connect();
     return true;
   } catch (err) {
-    console.log({
-      tmiConnectRetries,
-      TMI_RECONNECT_RETRIES,
-    })
     if (
       isString(err) &&
       err.toLowerCase().includes('authentication failed') &&
       (tmiConnectRetries++ < TMI_RECONNECT_RETRIES) &&
       await refreshAccessToken()
     ) {
-      log.warn('Twitch.chat.createChatClient reconnecting...', {
+      log.warn('reconnecting...', {
         retry: tmiConnectRetries
-      })
+      }, logPrefix)
       return this.createChatClient();
     } else {
-      log.error('Twitch.chat.createChatClient', {
+      log.error('createChatClient', {
         error: err
-      });
+      }, logPrefix);
     }
   }
 }
 
+const reconnectChatClient = async () => {
+  if (client) {
+    await client.disconnect();
+  }
+  log.debug('Reconnecting', null, logPrefix);
+  return createChatClient();
+}
+
 module.exports = {
   createChatClient,
+  reconnectChatClient,
   addCommand,
   addEvent,
 };
