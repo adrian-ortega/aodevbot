@@ -9,7 +9,8 @@ const ChatPointsModel = (sequelize, Sequelize) => {
     note: { type: STRING }
   });
 
-  ChatPoints.belongsTo(Chatter, { foreignKey: 'chatter_id', as: 'chatter' });
+  ChatPoints.Chatter = ChatPoints.belongsTo(Chatter, { foreignKey: 'chatter_id', as: 'chatter' });
+  Chatter.ChatPoints = Chatter.hasMany(ChatPoints, { foreignKey: 'chatter_id' });
 
   return ChatPoints;
 };

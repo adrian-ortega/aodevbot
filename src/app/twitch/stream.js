@@ -97,6 +97,40 @@ const getStreamChatters = async () => {
   return [];
 }
 
+const getSubscriptions = async (broadcaster_id, after = null) => {
+  try {
+    const params = {
+      broadcaster_id,
+      fitst: 100
+    }
+
+    if (after) {
+      params.after = after;
+    }
+    const { data } = await client.get('/helix/subscriptions', { params });
+    return data;
+  } catch (err) {
+    log.error('getSubscriptions', { message: err.message }, 'Twitch Streams');
+  }
+  return [];
+}
+
+const getBroadcasterSubscribers = async () => {
+  try {
+    const broadcaster = await getBroadcaster();
+    let response = await getSubscriptions(broadcaster.twitch_id);
+    let data = [...response.data];
+    while (response.pagination.cursor) {
+      response = await getSubscriptions(broadcaster.twitch_id, response.pagination.cursor);
+      data = [...response.data];
+    }
+    return data;
+  } catch (err) {
+    log.error('getStreamChatters', { message: err.message }, 'Twitch Streams');
+  }
+  return [];
+}
+
 let streamSyncId;
 
 const initStreamSync = () => {
@@ -112,6 +146,7 @@ module.exports = {
   getStreamId,
   getStreams,
   getStreamChatters,
+  getBroadcasterSubscribers,
   getBroadcasterStreams,
   syncStream,
 }

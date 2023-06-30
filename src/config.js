@@ -1,8 +1,11 @@
 require('dotenv').config();
 
+const DEFAULT_TIMEZONE = process.env.DEFAULT_TIMEZONE || 'America/Los_Angeles';
+process.env.TZ = DEFAULT_TIMEZONE;
+
 module.exports = {
   DEBUG: process.env.DEBUG || false,
-  DEFAULT_TIMEZONE: process.env.DEFAULT_TIMEZONE || 'America/Los_Angeles',
+  DEFAULT_TIMEZONE,
   PORT: process.env.NODE_LOCAL_PORT || 8080,
   HOST: process.env.HOST || 'localhost',
 
