@@ -45,7 +45,7 @@ const extractCommandName = (cmd, includeAliases) => {
   return cmdName;
 };
 
-exports.botMessageReply = (message) => `/me 🤖 - ${message}`;
+exports.botMessageReply = (message) => `🤖 ${message}`;
 
 exports.maybeRun = (channel, state, message, chatClient) => {
   const cmd = extractCommand(message);
