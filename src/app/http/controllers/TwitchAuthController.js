@@ -14,12 +14,21 @@ exports.authConfirm = async (req, res) => {
   const { Chatters } = require('../../models');
 
   const { code, state } = req.query;
-  const accessTokenResponse = await Twitch.getAuthTokenFromCode(code, redirect_uri);
-  if (!accessTokenResponse) {
+  if (!code) {
     return res.status(400).send({
-      message: "Invalid Access Token",
+      message: 'Missing code',
       authenticated: false
     });
+  }
+
+  const accessTokenResponse = await Twitch.getAuthTokenFromCode(code, redirect_uri);
+  if (!accessTokenResponse) {
+    return accessTokenResponse === false
+      ? res.redirect('/api/twitch/authenticate')
+      : res.status(400).send({
+        message: "Invalid Access Token",
+        authenticated: false
+      });
   }
 
   const { access_token, refresh_token, expires_in, scope } = accessTokenResponse;

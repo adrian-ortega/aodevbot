@@ -29,6 +29,13 @@ exports.getAuthTokenFromCode = async (code, redirect_uri) => {
     });
     return data;
   } catch (err) {
+    const { response } = err;
+
+    // Missing code for access_token
+    if (response && response.status === 400) {
+      return false;
+    }
+
     log.error('error getAuthTokenFromCode', {
       message: err.message
     });

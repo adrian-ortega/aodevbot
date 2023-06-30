@@ -36,6 +36,10 @@ const pointsSync = async () => {
   const stream_id = stream.id;
   const now = new Date();
   const { data: twitchChatters } = await getStreamChatters();
+
+  // @TODO create a timestamp that stores in files
+  // for interval handling.
+
   for (let i = 0; i < twitchChatters.length; i++) {
     const {
       user_id: twitch_id,
