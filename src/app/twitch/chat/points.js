@@ -1,4 +1,5 @@
 const log = require('../../log');
+const Timestamps = require('../../support/timestamps');
 const { Watchtime, Chatters, ChatPoints } = require('../../models');
 const { ONE_MINUTE } = require('../../support/time');
 const { getBroadcasterStreams, getStreamChatters, getBroadcasterSubscribers } = require('../stream');
@@ -34,6 +35,8 @@ const pointsSync = async () => {
   };
 
   const stream_id = stream.id;
+  const lastRunTs = Timestamps.get('twitch.points.sync');
+  console.log({ lastRunTs });
   const now = new Date();
   const { data: twitchChatters } = await getStreamChatters();
 
@@ -90,6 +93,8 @@ const pointsSync = async () => {
     // 3: 350pt
     // 4: 400pt
     // 5+: 450pt
+
+    Timestamps.put('twitch.points.sync', now.getTime());
   }
 }
 

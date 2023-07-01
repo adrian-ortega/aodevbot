@@ -1,5 +1,7 @@
 const log = require('../log');
+const { getBroadcaster } = require('../broadcaster');
 const { Chatters, Tokens, Sequelize } = require('../models');
+
 const token_type = 'twitch';
 
 // @TODO Update this to pull the chatter id from token
@@ -9,9 +11,10 @@ let currentToken;
 
 exports.loadAccessToken = async () => {
   try {
-
+    const broadcaster = await getBroadcaster();
     const results = await Tokens.findAll({
       where: {
+        chatter_id: broadcaster.id,
         token_type,
         expires: {
           [Sequelize.Op.gt]: new Date()

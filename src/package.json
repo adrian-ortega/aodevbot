@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "main": "server.js",
   "scripts": {
-    "nodemon": "nodemon ./server.js",
+    "nodemon": "nodemon ./server.js --ignore 'storage/'",
     "serve": "npm run ./server.js",
     "dev": "npm-run-all --parallel nodemon"
   },

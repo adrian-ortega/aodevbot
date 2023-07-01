@@ -73,12 +73,14 @@ const onJoin = async (channel, username, self) => {
   const Chatter = await Chatters.findOne({ where: { username } });
   if (!Chatter) {
     const twitchUserData = await getUser(username);
-    await Chatters.create({
-      twitch_id: twitchUserData.id,
-      username: twitchUserData.login,
-      display_name: twitchUserData.display_name,
-      profile_image_url: twitchUserData.profile_image_url
-    });
+    if (twitchUserData) {
+      await Chatters.create({
+        twitch_id: twitchUserData.id,
+        username: twitchUserData.login,
+        display_name: twitchUserData.display_name,
+        profile_image_url: twitchUserData.profile_image_url
+      });
+    }
   }
 
   if (self && !tmiConnected) {

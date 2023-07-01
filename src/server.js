@@ -19,7 +19,7 @@ db.sequelize.sync({
 });
 
 app.listen(PORT, () => {
-  console.clear();
+  // console.clear();
   require('./app/twitch').createChatClient();
   console.log();
   log.debug('AODEVBot is up and running', null, 'Server');
