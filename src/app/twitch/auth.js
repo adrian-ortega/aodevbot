@@ -10,6 +10,7 @@ exports.refreshAccessToken = async () => {
     const tokenOwner = await getTokenOwner();
     console.log(tokenOwner);
     // const data = await getUser();
+    return true;
   } catch (err) {
     log.error('refreshAccessToken', err);
     return false;
