@@ -1,10 +1,11 @@
 const log = require('../../log');
+const logPrefix = 'Twitch Points'
 const Timestamps = require('../../support/timestamps');
 const { Watchtime, Chatters, ChatPoints } = require('../../models');
 const { ONE_MINUTE } = require('../../support/time');
 const { getBroadcasterStreams, getStreamChatters, getBroadcasterSubscribers } = require('../stream');
 
-let syncId, syncing;
+let syncId;
 
 const getChatterPoints = async (chatter_id, stream_id) => {
   const cp = await ChatPoints.findOrCreate({
@@ -31,17 +32,17 @@ const pointsSync = async () => {
   syncing = true;
   const stream = await getBroadcasterStreams(true);
   if (!stream || !stream.id) {
-    return log.warn('Stream is not live', null, 'Twitch Streams');
+    return;
   };
 
-  const stream_id = stream.id;
   const lastRunTs = Timestamps.get('twitch.points.sync');
-  console.log({ lastRunTs });
   const now = new Date();
-  const { data: twitchChatters } = await getStreamChatters();
+  if (now.getTime() - lastRunTs < ONE_MINUTE * 3) {
+    return;
+  }
 
-  // @TODO create a timestamp that stores in files
-  // for interval handling.
+  const stream_id = stream.id;
+  const { data: twitchChatters } = await getStreamChatters();
 
   for (let i = 0; i < twitchChatters.length; i++) {
     const {

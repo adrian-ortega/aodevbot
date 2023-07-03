@@ -12,6 +12,8 @@ exports.refreshAccessToken = async () => {
     const broadcaster = await getBroadcaster();
     await loadAccessToken();
     const refresh_token = getRefreshToken();
+    console.log(refresh_token);
+
     const { data } = await client.post('https://id.twitch.tv/oauth2/token', {
       client_id: config.TWITCH_CLIENT_ID,
       client_secret: config.TWITCH_CLIENT_SECRET,
@@ -28,7 +30,9 @@ exports.refreshAccessToken = async () => {
     });
     return true;
   } catch (err) {
-    log.error('refreshAccessToken', err);
+    log.error('refreshAccessToken', {
+      message: err.message
+    });
     return false;
   }
 

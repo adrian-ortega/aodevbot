@@ -18,10 +18,7 @@ exports.loadAccessToken = async () => {
     const results = await Tokens.findAll({
       where: {
         chatter_id,
-        token_type,
-        expires: {
-          [Sequelize.Op.gt]: new Date()
-        }
+        token_type
       },
       limit: 1,
       order: [['expires', 'DESC']]
@@ -58,9 +55,9 @@ exports.getTokenType = () => token_type;
 
 exports.getToken = () => currentToken;
 
-exports.getAccessToken = () => currentToken.access_token;
+exports.getAccessToken = () => currentToken ? currentToken.access_token : null;
 
-exports.getRefreshToken = () => currentToken.refresh_token;
+exports.getRefreshToken = () => currentToken ? currentToken.refresh_token : null;
 
 exports.setAccessToken = async ({ access_token, refresh_token }, expires, scope) => {
   const results = await Tokens.findOrCreate({

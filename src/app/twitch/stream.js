@@ -48,7 +48,7 @@ const syncStream = async () => {
   syncing = true;
   const stream = await getBroadcasterStreams(true);
   if (!stream || !stream.id) {
-    return log.warn('Stream is not live', null, 'Twitch Streams');
+    return;
   };
 
   const Stream = await Streams.findOrCreate({
