@@ -1,4 +1,5 @@
 const log = require('../../log');
+const logPrefix = 'Twitch Cmds'
 const { getValue, isString, isArray, objectHasProp, objectHasMethod } = require('../../support');
 
 let data = [];
@@ -53,7 +54,7 @@ exports.maybeRun = (channel, state, message, chatClient) => {
 
   let cmdName = extractCommandName(cmd, true);
   const cmdCallback = (response = null) => {
-    log.debug(`${cmdName} Complete.`, { response });
+    log.debug(`${cmdName} Complete.`, { response }, logPrefix);
   }
   cmd.handle(message, state, channel, chatClient, cmdCallback);
   return true;
