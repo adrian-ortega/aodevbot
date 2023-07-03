@@ -157,18 +157,14 @@ const createChatClient = async () => {
     await client.connect();
     return true;
   } catch (err) {
-
-    if (err instanceof Error) {
-      const msg = err.message.toLowerCase();
-      const failed = msg.includes('authentication failed') ||
-        msg.includes('not found');
-      if (failed && (tmiConnectRetries++ < TMI_RECONNECT_RETRIES) && await refreshAccessToken()) {
+    const msg = err.toString().toLowerCase();
+    if (msg.includes('not found') || msg.includes('authentication failed')) {
+      const retry = tmiConnectRetries++ < TMI_RECONNECT_RETRIES
+      if (retry && await refreshAccessToken()) {
         log.warn('reconnecting...', {
           retry: tmiConnectRetries
         }, logPrefix)
-        return this.createChatClient();
-      } else {
-
+        return createChatClient();
       }
     } else {
       log.error('createChatClient', {

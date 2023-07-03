@@ -1,4 +1,5 @@
 const log = require('../log');
+const logPrefix = 'Twitch Tokens';
 const { getBroadcaster } = require('../broadcaster');
 const { Chatters, Tokens, Sequelize } = require('../models');
 
@@ -12,9 +13,11 @@ let currentToken;
 exports.loadAccessToken = async () => {
   try {
     const broadcaster = await getBroadcaster();
+    chatter_id = broadcaster.id;
+
     const results = await Tokens.findAll({
       where: {
-        chatter_id: broadcaster.id,
+        chatter_id,
         token_type,
         expires: {
           [Sequelize.Op.gt]: new Date()
@@ -23,11 +26,14 @@ exports.loadAccessToken = async () => {
       limit: 1,
       order: [['expires', 'DESC']]
     });
-    currentToken = results.shift();
+    if (results.length > 0) {
+      chatter_id = broadcaster.id;
+      currentToken = results.shift();
+    }
   } catch (err) {
     log.error('Twitch.tokens.load', {
       message: err.message
-    });
+    }, logPrefix);
   }
 
   return currentToken;
@@ -45,9 +51,10 @@ exports.setTokenOwner = async (chatter_id) => {
 
 exports.getTokenOwner = async () => {
   await this.loadAccessToken();
-  console.log({ currentToken });
-  return Chatters.findByPk(currentToken.chatter_id);
+  return currentToken ? Chatters.findByPk(currentToken.chatter_id) : 0;
 };
+
+exports.getTokenType = () => token_type;
 
 exports.getToken = () => currentToken;
 

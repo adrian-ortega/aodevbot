@@ -15,7 +15,7 @@ const requestAccessTokenInterceptor = async function (config) {
 }
 
 const requestInterceptorErrorHandler = function (err) {
-  log.error('Something went werong with the interceptor', err, 'requestInterceptorErrorHandler');
+  log.error('Something went wrong with the interceptor', err, 'requestInterceptorErrorHandler');
 };
 
 instance.interceptors.request.use(

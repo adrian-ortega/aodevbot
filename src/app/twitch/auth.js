@@ -1,15 +1,31 @@
 const log = require('../log');
 const config = require('../../config');
 const client = require('axios');
-const { loadAccessToken, getAccessToken, getTokenOwner } = require('./tokens');
+const moment = require('moment');
+const { Tokens } = require('../models');
+const { loadAccessToken, getRefreshToken, getTokenType } = require('./tokens');
 const { getUser } = require('./users');
+const { getBroadcaster } = require('../broadcaster');
 
 exports.refreshAccessToken = async () => {
   try {
+    const broadcaster = await getBroadcaster();
     await loadAccessToken();
-    const tokenOwner = await getTokenOwner();
-    console.log(tokenOwner);
-    // const data = await getUser();
+    const refresh_token = getRefreshToken();
+    const { data } = await client.post('https://id.twitch.tv/oauth2/token', {
+      client_id: config.TWITCH_CLIENT_ID,
+      client_secret: config.TWITCH_CLIENT_SECRET,
+      grant_type: 'refresh_token',
+      refresh_token
+    });
+    await Tokens.create({
+      chatter_id: broadcaster.id,
+      token_type: getTokenType(),
+      access_token: data.access_token,
+      refresh_token: data.refresh_token,
+      expires: moment().add(data.expires_in, 'seconds'),
+      scope: data.scope.join(' ')
+    });
     return true;
   } catch (err) {
     log.error('refreshAccessToken', err);
