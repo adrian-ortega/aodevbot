@@ -29,7 +29,6 @@ const getPointsMultiplier = async (Chatter) => {
 }
 
 const pointsSync = async () => {
-  syncing = true;
   const stream = await getBroadcasterStreams(true);
   if (!stream || !stream.id) {
     return;

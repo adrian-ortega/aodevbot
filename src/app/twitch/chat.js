@@ -104,11 +104,15 @@ const onMessage = async (channel, state, message, self) => {
     }
     await logMessage(message, state);
     current_message = { message, state };
+
+    // @TODO Implement dev web socket with debug chat component
+    //
     const chatClient = {
       client,
       commands,
       events
     };
+
     if (!commands.maybeRun(channel, state, message, chatClient)) {
       // @TODO implement events
       events.maybeRun(channel, state, message, chatClient)

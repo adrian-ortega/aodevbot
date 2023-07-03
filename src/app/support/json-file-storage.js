@@ -72,6 +72,7 @@ class JSONFileStorage {
   fileWriteParser(value) {
     return JSON.stringify(value);
   }
+
   fileReadParser(value) {
     return JSON.parse(value);
   }
