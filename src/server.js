@@ -1,8 +1,11 @@
 const { PORT, HOST } = require('./config.js');
 const log = require('./app/log');
+const path = require('path');
 const express = require('express');
 const router = require('./app/router');
 const app = express();
+
+app.use(express.static(path.resolve('./public')));
 
 // parse requests of content-type - application/json
 app.use(express.json());
