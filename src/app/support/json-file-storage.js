@@ -16,12 +16,21 @@ class JSONFileStorage {
   }
 
   has(id) {
-    // @TODO implement
+    this.refresh();
+    return objectHasProp(this.data, id)
   }
 
   get(id, defaultValue = null) {
     this.refresh();
-    return objectHasProp(this.data, id) ? this.data[id] : defaultValue;
+    return this.has(id) ? this.data[id] : defaultValue;
+  }
+
+  getOrCreate(id, createValue = null) {
+    this.refresh();
+    if (!this.has(id)) {
+      this.put(id, createValue);
+    }
+    return this.get(id);
   }
 
   put(id, value) {
