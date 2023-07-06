@@ -1,5 +1,6 @@
 const { PORT, HOST } = require('./config.js');
 const { checkOrCreateDirectory } = require('./app/support/files');
+const { createWebSocketServer } = require('./app/websockets');
 const log = require('./app/log');
 const path = require('path');
 const express = require('express');
@@ -23,10 +24,12 @@ db.sequelize.sync({
   force: false
 });
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   // console.clear();
   require('./app/twitch').createChatClient();
   console.log();
   log.debug('AODEVBot is up and running', null, 'Server');
   log.info(`http://${HOST}:${PORT}\n`, null, 'Server');
 });
+
+createWebSocketServer(server);
