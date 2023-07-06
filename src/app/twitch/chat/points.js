@@ -5,14 +5,26 @@ const { Watchtime, Chatters, ChatPoints } = require('../../models');
 const { ONE_MINUTE } = require('../../support/time');
 const { getBroadcasterStreams, getStreamChatters, getBroadcasterSubscribers } = require('../stream');
 
+const TIMESTAMP_KEY = 'twitch.points.sync';
 let syncId;
 
-const getChatterPoints = async (chatter_id, stream_id) => {
-  const cp = await ChatPoints.findOrCreate({
-    where: { chatter_id, stream_id },
-    defaults: { chatter_id, stream_id }
+const updateAndGetChatterWatchtime = async (twitch_id, stream_id, now) => {
+  let wt = await Watchtime.findOne({
+    where: { twitch_id, stream_id }
   });
-  return cp.shift();
+  if (!wt) {
+    wt = await Watchtime.create({ twitch_id, stream_id, total: 0 });
+  }
+  const updated = new Date(wt.updated_at);
+  const seconds = Math.floor(Math.abs(now.getTime() - updated.getTime()) / 1000);
+  if (seconds) {
+    await wt.update({
+      total: wt.total + seconds
+    });
+    return seconds;
+  }
+
+  return 0;
 }
 
 const getPointsMultiplier = async (Chatter) => {
@@ -33,51 +45,28 @@ const pointsSync = async () => {
   if (!stream || !stream.id) {
     return;
   };
-
-  const lastRunTs = Timestamps.get('twitch.points.sync');
   const now = new Date();
-  if (now.getTime() - lastRunTs < ONE_MINUTE * 3) {
-    return;
-  }
-
   const stream_id = stream.id;
   const { data: twitchChatters } = await getStreamChatters();
-
   for (let i = 0; i < twitchChatters.length; i++) {
     const {
       user_id: twitch_id,
-      user_login: username,
       user_name: display_name
     } = twitchChatters[i];
-    let totalSeconds = 0;
-    // const awarded = [];
+    const awarded = [];
     const Chatter = await Chatters.findOne({
       where: {
         twitch_id
       }
     });
     const multiplier = await getPointsMultiplier(Chatter);
-    const wtResults = await Watchtime.findOrCreate({
-      where: {
-        twitch_id,
-        stream_id,
-      },
-      defaults: {
-        twitch_id,
-        stream_id,
-        total: 0
-      }
-    });
-    const wt = wtResults.shift();
-    const updatedAt = new Date(wt.updated_at);
-    totalSeconds = Math.floor(Math.abs(now.getTime() - updatedAt.getTime()) / 1000);
-    wt.toal = wt.total + totalSeconds;
-    await wt.save();
+    const watchtimeSeconds = await updateAndGetChatterWatchtime(twitch_id, stream_id, now);
 
-    if (totalSeconds >= (60 * 5)) {
-      const chatterPoints = await getChatterPoints(twitch_id, stream_id);
-      chatterPoints.points = chatterPoints.points + (10 * multiplier);
-      chatterPoints.save();
+    // Award 10 points for every 5 mins
+    if (watchtimeSeconds >= (60 * 5)) {
+      const points = 10 * multiplier;
+      Chatter.points = Math.ceil(Chatter.points + points);
+      awarded.push({ points, note: `${points} (10 * ${multiplier}) awarded to ${display_name} for every 5 minutes watched.` });
     }
 
     // Award 50 points for every 15 mins of "active" watchtime.
@@ -94,13 +83,22 @@ const pointsSync = async () => {
     // 4: 400pt
     // 5+: 450pt
 
-    Timestamps.put('twitch.points.sync', now.getTime());
+    for (let i = 0; i < awarded.length; i++) {
+      const { points, note } = awarded[i];
+      await ChatPoints.create({
+        stream_id,
+        chatter_id: Chatter.id,
+        points,
+        note
+      });
+    }
   }
 }
 
 exports.initPointsSync = () => {
+  const timeout = Timestamps.getOrCreate(TIMESTAMP_KEY, ONE_MINUTE);
   const sync = () => pointsSync().then(() => {
-    syncId = setTimeout(sync, ONE_MINUTE);
+    syncId = setTimeout(sync, timeout);
   });
   clearTimeout(syncId);
   sync();
