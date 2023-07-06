@@ -129,5 +129,5 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
-/storage/*.json
-!/storage/.gitkeep
+src/storage/*.json
+!src/storage/.gitkeep
