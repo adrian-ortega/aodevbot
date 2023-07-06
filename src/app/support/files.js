@@ -12,6 +12,30 @@ const fileExists = (path) => {
   }
 };
 
+const directoryExists = (path) => fileExists(path);
+const createDirectory = (path, fsOptions = {}) => {
+  try {
+    if (directoryExists(path)) {
+      throw new Error('Directory exists');
+    }
+
+    fs.mkdirSync(path, fsOptions);
+    return directoryExists(path);
+  } catch (err) {
+    log.error('Failed to create directory', {
+      message: err.message,
+      path
+    }, logPrefix);
+  }
+
+  return false;
+}
+
+const checkOrCreateDirectory = (path) => {
+  if (directoryExists(path)) return;
+  return createDirectory(path);
+}
+
 const saveFile = (path, data = null, writeParser = getValue) => {
   try {
     fs.writeFileSync(path, writeParser(data));
@@ -41,6 +65,10 @@ const loadFile = (path, createIfEmptyValue = '', readParser = getValue, writePar
 }
 
 module.exports = {
+  directoryExists,
+  createDirectory,
+  checkOrCreateDirectory,
+
   fileExists,
   loadFile,
   saveFile
