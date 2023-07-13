@@ -1,10 +1,19 @@
 const log = require('../log');
 const logPrefix = 'WS';
 const WebSocket = require('ws');
+const { fireActions } = require('./actions');
+const { objectHasProp, isArray, isString, isObject } = require('../support');
 
-const wsResponse = (webSocketConnection, connectionRequest, connectedResponse) => {
+let webSocketServer
 
-  // @TODO AO - use the connectionRequest for chat debugging/interception
+const wsResponse = async (webSocketConnection, connectionRequest, connectedResponse) => {
+  const hasMessage = objectHasProp(connectedResponse, 'message');
+  let { message, user, action, actions, ...deltaResponse } = connectedResponse;
+
+  if (isArray(actions)) await fireActions(actions);
+  if (isString(action)) action = { id: action, args: [] };
+  if (isObject(action)) action = [action];
+  if (isArray(action)) await fireActions(action);
 
   webSocketConnection.send(JSON.stringify(connectedResponse));
 };
@@ -13,9 +22,15 @@ const onServerConnection = (webSocketConnection, connectionRequest) => {
   const [path, params] = connectionRequest?.url?.split('?') || [null, null];
 
   webSocketConnection.on('message', (message) => {
+    const data = JSON.parse(message);
+
     // @TODO handle requests from the browser source
 
     // @TODO handle requests from the streamdeck
+
+    if (data.fromLocal) {
+      wsResponse(webSocketConnection, {}, data);
+    }
   });
 
   webSocketConnection.on('close', () => {
@@ -28,13 +43,23 @@ const onServerConnection = (webSocketConnection, connectionRequest) => {
       connectedResponse.requestType = 'browser-source';
   }
 
-  // @TODO do stuff to the connection response lol
-
   return wsResponse(webSocketConnection, connectionRequest, connectedResponse);
 };
 
+exports.getWebSocketServer = () => webSocketServer;
+
+exports.broadcastToClients = (data) => {
+  webSocketServer.clients.forEach(client => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify(data));
+    }
+  });
+}
+
 exports.createWebSocketServer = (expressServer) => {
-  const webSocketServer = new WebSocket.WebSocketServer({
+  const { registerActions } = require('./actions');
+
+  webSocketServer = new WebSocket.WebSocketServer({
     noServer: true,
     path: '/websockets'
   });
@@ -46,6 +71,8 @@ exports.createWebSocketServer = (expressServer) => {
   });
 
   webSocketServer.on('connection', onServerConnection);
+
+  registerActions(webSocketServer);
 
   log.debug('WebSocket Created', {
     url: '/websockets',

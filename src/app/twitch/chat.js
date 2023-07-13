@@ -4,6 +4,7 @@ const chalk = require('chalk');
 const commands = require('./chat/commands');
 const initCommands = require('./chat/commands/dictionary');
 const events = require('./chat/events');
+const initEvents = require('./chat/events/dictionary');
 const { Chat, Chatters } = require('../models');
 const { initPointsSync } = require('./chat/points');
 const { loadAccessToken } = require('./tokens');
@@ -85,6 +86,7 @@ const onJoin = async (channel, username, self) => {
 
   if (self && !tmiConnected) {
     await initCommands(commands);
+    await initEvents(events);
     await initStreamSync();
     await initPointsSync();
     tmiConnected = true;
