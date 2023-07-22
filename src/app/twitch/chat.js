@@ -1,17 +1,20 @@
+const WebSocket = require('ws');
 const log = require('../log');
 const logPrefix = 'Twitch Chat';
 const chalk = require('chalk');
+
 const commands = require('./chat/commands');
 const initCommands = require('./chat/commands/dictionary');
 const events = require('./chat/events');
 const initEvents = require('./chat/events/dictionary');
+
+const { parseChatMessageHtml } = require('../websockets/helpers');
 const { Chat, Chatters } = require('../models');
 const { initPointsSync } = require('./chat/points');
 const { loadAccessToken } = require('./tokens');
 const { refreshAccessToken } = require('./auth');
 const { getStreamId, initStreamSync } = require('./stream');
 const { getUser } = require('./users');
-const { isString } = require('../support');
 const { TWITCH_USERNAME } = require('../../config');
 const { USER_ID, USER_IS_SUB, USER_IS_MOD, USER_USERNAME, USER_DISPLAY_NAME } = require('./chat/state-keys');
 
@@ -146,7 +149,7 @@ const getTwitchAuthIdentity = () => {
   }
 }
 
-const createChatClient = async () => {
+const createChatClient = async (wss) => {
   try {
     const identity = getTwitchAuthIdentity();
     client = new tmi.Client({
@@ -160,6 +163,26 @@ const createChatClient = async () => {
     });
     client.on('join', onJoin);
     client.on('message', onMessage);
+
+    // send to debug clients
+    client.on('message', (channel, state, message) => {
+      wss.clients.forEach(ws => {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({
+            event: 'chat-message',
+            payload: {
+              channel,
+              messages: [{
+                message,
+                html: parseChatMessageHtml(message, state),
+                user: state
+              }]
+            }
+          }));
+        }
+      });
+    });
+
     await client.connect();
     return true;
   } catch (err) {
@@ -188,9 +211,12 @@ const reconnectChatClient = async () => {
   return createChatClient();
 }
 
+const getChatClient = () => client;
+
 module.exports = {
   createChatClient,
   reconnectChatClient,
   addCommand,
   addEvent,
+  getChatClient,
 };

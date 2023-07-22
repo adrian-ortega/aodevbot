@@ -2,9 +2,7 @@ const parseMe = (s) => s.indexOf('/me') === 0 ? `<em>${s.replace('/me', '')}</em
 
 exports.parseChatMessageHtml = (message, { emotes }) => {
   if (!emotes) return parseMe(message);
-
   const stringReplacements = [];
-
   Object.entries(emotes).forEach(([id, positions]) => {
     const position = positions[0];
     const [start, end] = position.split('-');
@@ -17,12 +15,11 @@ exports.parseChatMessageHtml = (message, { emotes }) => {
     });
 
     // generate HTML and replace all emote keywords with image elements
-    return parseMe(stringReplacements.reduce(
-      (acc, { stringToReplace, replacement }) => {
-        // obs browser doesn't seem to know about replaceAll
-        return acc.split(stringToReplace).join(replacement);
-      },
-      message
-    ));
+    const parsedString = stringReplacements.reduce((acc, { stringToReplace, replacement }) => {
+      // obs browser doesn't seem to know about replaceAll
+      return acc.split(stringToReplace).join(replacement);
+    }, message);
+
+    return parseMe(parsedString);
   });
 }
