@@ -2,7 +2,7 @@ const { getBroadcaster } = require('../../broadcaster');
 const { parseChatMessageHtml } = require('../helpers');
 const { Chatters } = require('../../models');
 const {
-  USER_COLOR, USER_ROOM_ID, USER_DISPLAY_NAME, USER_ID
+  USER_COLOR, USER_ROOM_ID, USER_DISPLAY_NAME, USER_ID, USER_USERNAME
 } = require('../../twitch/chat/state-keys');
 const twitchCommands = require('../../twitch/chat/commands');
 const twitchEvents = require('../../twitch/chat/events');
@@ -10,7 +10,8 @@ const twitchEvents = require('../../twitch/chat/events');
 const createTmiChatState = (Chatter, Broadcaster) => {
   return {
     _id: Chatter.id,
-    [USER_ID]: Chatter.user_id,
+    [USER_ID]: Chatter.twitch_id,
+    [USER_USERNAME]: Chatter.username,
     [USER_COLOR]: '#CF4C00',
     [USER_ROOM_ID]: Broadcaster.twitch_id,
     [USER_DISPLAY_NAME]: Chatter.display_name,

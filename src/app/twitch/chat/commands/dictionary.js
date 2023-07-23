@@ -1,5 +1,6 @@
 const log = require('../../../log');
 const registeredCommands = [
+  require('./LurkCommand'),
   require('./TimeCommand'),
   require('./PointsCommand'),
   require('./CommandsCommand') // Must be last in the list

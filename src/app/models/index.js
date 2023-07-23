@@ -39,5 +39,6 @@ db.Chat = require('./Chat')(sequelize, Sequelize);
 db.ChatPoints = require('./ChatPoints')(sequelize, Sequelize);
 db.Watchtime = require('./Watchtime')(sequelize, Sequelize);
 db.Tokens = require('./Token')(sequelize, Sequelize);
+db.KeyValue = require('./KeyValue')(sequelize, Sequelize);
 
 module.exports = db;

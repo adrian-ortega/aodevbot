@@ -12,6 +12,7 @@ const isObject = (a) => typeof a === 'object' && a !== null;
 const objectHasProp = (a, k) => isObject(a) && Object.prototype.hasOwnProperty.call(a, k);
 const objectHasMethod = (a, m) => !isObject(a) || typeof a[m] === 'undefined' ? false : isFunction(a[m]);
 const getValue = (a, def = null) => isFunction(a) ? a() : a !== undefined ? a : def;
+const getValues = (a) => a.map(getValue);
 const isEmpty = (mixedValue) => {
   const emptyValues = [undefined, null, false, 0, "", "0"];
   for (let i = 0, len = emptyValues.length; i < len; i++) {
@@ -33,6 +34,8 @@ const isEmpty = (mixedValue) => {
 };
 const wait = (time) => new Promise((resolve) => setTimeout(resolve, time));
 
+const randomFromArray = (array) => array[Math.floor(Math.random() * array.length)];
+
 module.exports = {
   isEmpty,
   isString,
@@ -42,5 +45,8 @@ module.exports = {
   objectHasProp,
   objectHasMethod,
   getValue,
+  getValues,
   wait,
+
+  randomFromArray,
 }
