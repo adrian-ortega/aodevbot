@@ -9,6 +9,7 @@ const isFunction = (a) => {
 
 };
 const isObject = (a) => typeof a === 'object' && a !== null;
+const isNumeric = (a) => !isNaN(parseFloat(a)) && isFinite(a);
 const objectHasProp = (a, k) => isObject(a) && Object.prototype.hasOwnProperty.call(a, k);
 const objectHasMethod = (a, m) => !isObject(a) || typeof a[m] === 'undefined' ? false : isFunction(a[m]);
 const getValue = (a, def = null) => isFunction(a) ? a() : a !== undefined ? a : def;
@@ -42,6 +43,7 @@ module.exports = {
   isFunction,
   isObject,
   isArray,
+  isNumeric,
   objectHasProp,
   objectHasMethod,
   getValue,

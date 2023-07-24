@@ -1,6 +1,8 @@
 const log = require('../log');
+const logPrefix = 'Twitch Users'
 const client = require('./client');
-exports.getUser = async (id) => {
+
+const getUser = async (id) => {
   try {
     const params = { first: 1, id: null };
     if (id) {
@@ -16,8 +18,12 @@ exports.getUser = async (id) => {
   } catch (err) {
     log.error('Twitch.getUser error', {
       message: err.message
-    });
+    }, logPrefix);
   }
 
   return null;
+}
+
+module.exports = {
+  getUser
 }

@@ -1,6 +1,7 @@
 const log = require('../../log');
 const logPrefix = 'Twitch Cmds'
 const { getValue, isString, isArray, objectHasProp, objectHasMethod } = require('../../support');
+const { USER_MESSAGE_PARAMS } = require('./state-keys');
 
 let data = [];
 
@@ -46,6 +47,34 @@ const extractCommandName = (cmd, includeAliases) => {
   return cmdName;
 };
 
+const getMatchedName = (message, cmd) => {
+  const cmdName = getValue(cmd.name);
+  let matchedName = cmdName;
+  if (isArray(cmdName)) {
+    for (let i = 0; i < cmdName.length; i++) {
+      if (message.trim().match(new RegExp(`^!${cmdName[i]}\\b`, 'i'))) {
+        matchedName = cmdName[i];
+        break;
+      }
+    }
+  }
+  return matchedName;
+}
+
+const getMessageParams = (message, cmd) => {
+  const name = getMatchedName(message, cmd);
+  const params = [
+    ...message.trim().split(new RegExp(`^!${name}(\\b\\s+|$)`, 'i'))
+      .map(p => p.replace(name, '').trim())
+      .filter(p => p.length > 0)
+      .values()
+  ];
+
+  return message.indexOf('|') === -1
+    ? params
+    : params.map(p => p.split('|').map(p => p.trim())).flat()
+}
+
 exports.botMessageReply = (message) => `🤖 ${message}`;
 
 exports.maybeRun = (channel, state, message, chatClient) => {
@@ -56,6 +85,9 @@ exports.maybeRun = (channel, state, message, chatClient) => {
   const cmdCallback = (response = null) => {
     log.debug(`${cmdName} Complete.`, { response }, logPrefix);
   }
+
+  state[USER_MESSAGE_PARAMS] = getMessageParams(message, cmd)
+
   cmd.handle(message, state, channel, chatClient, cmdCallback);
   return true;
 }

@@ -13,6 +13,7 @@ const USER_CUSTOM_REWARD_ID = 'custom-reward-id';
 const USER_ID = 'user-id';
 const USER_TYPE = 'user-type';
 const USER_USERNAME = 'username';
+const USER_MESSAGE_PARAMS = 'user-message-params'
 
 module.exports = {
   USER_BADGE_INFO,
@@ -29,5 +30,6 @@ module.exports = {
   USER_CUSTOM_REWARD_ID,
   USER_ID,
   USER_TYPE,
-  USER_USERNAME
+  USER_USERNAME,
+  USER_MESSAGE_PARAMS
 };

@@ -1,5 +1,6 @@
 const log = require('../../../log');
 const registeredCommands = [
+  require('./FollowageCommand'),
   require('./LurkCommand'),
   require('./UnlurkCommand'),
   require('./ChatCountCommand'),
