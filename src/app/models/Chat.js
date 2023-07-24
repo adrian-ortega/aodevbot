@@ -4,13 +4,20 @@ const ChatModel = (sequelize, Sequelize) => {
   const Chat = sequelize.define('Chat', {
     id: { type: INTEGER, primaryKey: true, autoIncrement: true },
     stream_id: { type: BIGINT },
-    chatter_id: { type: INTEGER },
+    twitch_id: { type: INTEGER },
     message_type: { type: STRING },
     message_content: { type: TEXT }
   });
 
-  Chat.belongsTo(Chatter, { foreignKey: 'chatter_id', as: 'chatter' });
-  Chat.belongsTo(Stream, { foreignKey: 'stream_id', as: 'stream' });
+  Chatter.Chats = Chatter.hasMany(Chat, {
+    sourceKey: 'twitch_id',
+    foreignKey: 'twitch_id'
+  });
+
+  Chat.Chatter = Chat.belongsTo(Chatter, {
+    sourceKey: 'twitch_id',
+    foreignKey: 'twitch_id'
+  })
 
   return Chat;
 };

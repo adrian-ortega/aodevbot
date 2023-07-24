@@ -56,7 +56,7 @@ const logMessage = async (message_content, state) => {
     const Chatter = await getChatterFromChatState(state);
     if (Chatter) {
       await Chat.create({
-        chatter_id: state[USER_ID],
+        twitch_id: state[USER_ID],
         stream_id,
         message_content,
         created_at: new Date(parseInt(state[TMI_SENT_STAMP], 10))
@@ -166,21 +166,23 @@ const createChatClient = async (wss) => {
 
     // send to debug clients
     client.on('message', (channel, state, message) => {
-      wss.clients.forEach(ws => {
-        if (ws.readyState === WebSocket.OPEN) {
-          ws.send(JSON.stringify({
-            event: 'chat-message',
-            payload: {
-              channel,
-              messages: [{
-                message,
-                html: parseChatMessageHtml(message, state),
-                user: state
-              }]
-            }
-          }));
-        }
-      });
+      if (wss.clients && wss.clients.length > 0) {
+        wss.clients.forEach(ws => {
+          if (ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({
+              event: 'chat-message',
+              payload: {
+                channel,
+                messages: [{
+                  message,
+                  html: parseChatMessageHtml(message, state),
+                  user: state
+                }]
+              }
+            }));
+          }
+        });
+      }
     });
 
     await client.connect();

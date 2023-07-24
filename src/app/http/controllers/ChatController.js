@@ -2,7 +2,7 @@ const db = require('../../models');
 const { Chat } = db;
 
 exports.create = (req, res) => {
-  if (!req.body.message_content || !req.body.chatter_id) {
+  if (!req.body.message_content || !req.body.twitch_id) {
     return res.status(400).send({
       message: "Missing content"
     });
@@ -16,7 +16,7 @@ exports.create = (req, res) => {
   //       then use stream_id
 
   const chat = {
-    chatter_id: req.body.chatter_id,
+    twitch_id: req.body.twitch_id,
 
     // @TODO pull this live!
     stream_id: 1,
