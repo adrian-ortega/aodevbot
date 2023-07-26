@@ -7,10 +7,10 @@ exports.clear = () => {
   data = [];
 }
 
-exports.maybeRun = (channel, user, message) => {
+exports.maybeRun = (channel, state, message) => {
   data
-    .filter(event => event.assert(channel, user, message))
-    .forEach(event => event.handle(channel, user, message));
+    .filter(event => event.assert(channel, state, message))
+    .forEach(event => event.handle(channel, state, message));
 }
 
 exports.append = (event) => {

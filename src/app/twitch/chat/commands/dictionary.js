@@ -6,6 +6,7 @@ const registeredCommands = [
   require('./ChatCountCommand'),
   require('./TimeCommand'),
   require('./PointsCommand'),
+  require('./RedeemCommand'),
   require('./CommandsCommand') // Must be last in the list
 ];
 
