@@ -19,6 +19,17 @@ const createTmiChatState = (Chatter, Broadcaster) => {
 };
 
 const createTmiClientSpoof = (ws, state) => {
+  // This doesn't work. when creating the the original spoof, the
+  // user stays as the original request for the bot.
+  // 
+  // Example: The original request is by the user 
+  //            ↳ Dragoy_Zzz: !time
+  //
+  //          The returned message should be by the BOT ACCOUNT,
+  //          this only happens for admin debug chat.
+  //            ↳ Dragoy_Zzz: 🤖 It is Friday 4:03 PM for aodev.
+
+
   return {
     say: async (channel, message) => {
       if (ws) {
