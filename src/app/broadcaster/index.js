@@ -1,10 +1,29 @@
 const { isNumeric } = require('../support')
 const { Chatters } = require('../models');
 
+const PRIMARY_BROADCASTER = 1;
+const SECONDARY_BROADCASTER = 2
+
 const getBroadcaster = async () => {
-  const Broadcaster = await Chatters.findOne({ where: { broadcaster: true } });
+  const Broadcaster = await Chatters.findOne({
+    where: {
+      broadcaster: PRIMARY_BROADCASTER
+    }
+  });
   if (!Broadcaster) {
     throw new Error('No broadcaster!')
+  }
+  return Broadcaster;
+}
+
+const getSecondaryBroadcaster = async () => {
+  const Broadcaster = await Chatters.findOne({
+    where: {
+      broadcaster: SECONDARY_BROADCASTER
+    }
+  });
+  if (!Broadcaster) {
+    throw new Error('No secondary broadcaster!')
   }
   return Broadcaster;
 }
@@ -19,7 +38,11 @@ const isBroadcaster = async (twitch_id_or_usename) => {
 }
 
 module.exports = {
+  PRIMARY_BROADCASTER,
+  SECONDARY_BROADCASTER,
   getBroadcaster,
   getBroadcasterTwitchId,
-  isBroadcaster
+  isBroadcaster,
+
+  getSecondaryBroadcaster,
 }

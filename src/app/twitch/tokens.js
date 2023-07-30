@@ -8,31 +8,32 @@ const token_type = 'twitch';
 // @TODO Update this to pull the chatter id from token
 let chatter_id = 0;
 
-let currentToken;
+let currentToken, currentTokenOverride = false;
 
 exports.loadAccessToken = async () => {
-  try {
-    const broadcaster = await getBroadcaster();
-    chatter_id = broadcaster.id;
-
-    const results = await Tokens.findAll({
-      where: {
-        chatter_id,
-        token_type
-      },
-      limit: 1,
-      order: [['expires', 'DESC']]
-    });
-    if (results.length > 0) {
+  if (!currentTokenOverride) {
+    try {
+      const broadcaster = await getBroadcaster();
       chatter_id = broadcaster.id;
-      currentToken = results.shift();
-    }
-  } catch (err) {
-    log.error('Twitch.tokens.load', {
-      message: err.message
-    }, logPrefix);
-  }
 
+      const results = await Tokens.findAll({
+        where: {
+          chatter_id,
+          token_type
+        },
+        limit: 1,
+        order: [['expires', 'DESC']]
+      });
+      if (results.length > 0) {
+        chatter_id = broadcaster.id;
+        currentToken = results.shift();
+      }
+    } catch (err) {
+      log.error('Twitch.tokens.load', {
+        message: err.message
+      }, logPrefix);
+    }
+  }
   return currentToken;
 }
 
@@ -58,6 +59,10 @@ exports.getToken = () => currentToken;
 exports.getAccessToken = () => currentToken ? currentToken.access_token : null;
 
 exports.getRefreshToken = () => currentToken ? currentToken.refresh_token : null;
+
+exports.overrideCurrentToken = (override) => {
+  currentTokenOverride = override;
+};
 
 exports.setAccessToken = async ({ access_token, refresh_token }, expires, scope) => {
   const results = await Tokens.findOrCreate({

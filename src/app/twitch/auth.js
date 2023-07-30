@@ -5,7 +5,7 @@ const moment = require('moment');
 const TokensStore = require('./tokens');
 const { Tokens } = require('../models');
 const { getUser } = require('./users');
-const { getBroadcaster } = require('../broadcaster');
+const { getBroadcaster, PRIMARY_BROADCASTER, SECONDARY_BROADCASTER } = require('../broadcaster');
 
 exports.refreshAccessToken = async () => {
   try {
@@ -63,13 +63,12 @@ exports.getAuthTokenFromCode = async (code, redirect_uri) => {
   return null;
 }
 
-exports.getAuthURL = (isBroadcaster = false, redirect_uri) => {
+exports.getAuthURL = (redirect_uri, type = 0) => {
   const client_id = config.TWITCH_CLIENT_ID;
-
-  const state = '';
+  const state = JSON.stringify({ t: type });
   const scopes = ['user:read:email'];
 
-  if (isBroadcaster) {
+  if (type === PRIMARY_BROADCASTER) {
     scopes.push('bits:read');
     scopes.push('moderator:read:chatters');
     scopes.push('analytics:read:games');
@@ -77,10 +76,13 @@ exports.getAuthURL = (isBroadcaster = false, redirect_uri) => {
     scopes.push('channel:read:hype_train');
     scopes.push('channel:manage:broadcast');
     scopes.push('channel:manage:redemptions');
-    scopes.push('chat:read');
-    scopes.push('chat:edit');
     scopes.push('user:read:subscriptions');
     scopes.push('user:read:follows');
+  }
+
+  if (type === PRIMARY_BROADCASTER || type === SECONDARY_BROADCASTER) {
+    scopes.push('chat:read');
+    scopes.push('chat:edit');
   }
 
   const url = new URL(`https://id.twitch.tv/oauth2/authorize`);
@@ -89,7 +91,8 @@ exports.getAuthURL = (isBroadcaster = false, redirect_uri) => {
     client_id,
     redirect_uri,
     scope: scopes.join(' '),
-    state: state
+    state,
+    force_verify: true
   }
   Object.entries(params).forEach(([key, value]) => {
     url.searchParams.append(key, value);
