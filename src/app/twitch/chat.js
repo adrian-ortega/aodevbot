@@ -69,8 +69,10 @@ const logMessage = async (message_content, state) => {
   }
 }
 
-const addCommand = (...args) => commands.append(...args)
+const addCommand = (...args) => commands.append(...args);
+const getCommands = () => commands.getAll();
 const addEvent = (...args) => events.append(...args);
+const getEvents = () => events.getAll();
 
 const onJoin = async (channel, username, self) => {
   // Check if chatter exists
@@ -86,6 +88,8 @@ const onJoin = async (channel, username, self) => {
       });
     }
   }
+
+  console.log({ self, username , tmiConnected })
 
   if (self && !tmiConnected) {
     await initCommands(commands);
@@ -219,6 +223,8 @@ module.exports = {
   createChatClient,
   reconnectChatClient,
   addCommand,
+  getCommands,
   addEvent,
+  getEvents,
   getChatClient,
 };
