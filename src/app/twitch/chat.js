@@ -89,8 +89,6 @@ const onJoin = async (channel, username, self) => {
     }
   }
 
-  console.log({ self, username , tmiConnected })
-
   if (self && !tmiConnected) {
     await initCommands(commands);
     await initEvents(events);

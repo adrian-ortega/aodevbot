@@ -21,7 +21,7 @@ router(app);
 const db = require('./app/models');
 db.sequelize.sync({
   logging: false,
-  force: false
+  force: true
 });
 
 const twitch = require('./app/twitch');

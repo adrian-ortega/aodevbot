@@ -104,7 +104,6 @@ exports.append = (command, message = null) => {
   }
 
   data.push(command);
-  console.log(data);
 }
 
 exports.clear = () => {
@@ -112,6 +111,5 @@ exports.clear = () => {
 }
 
 exports.getAll = () => {
-  console.log(data);
   return data;
 }
