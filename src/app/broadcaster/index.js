@@ -11,7 +11,7 @@ const getBroadcaster = async () => {
     }
   });
   if (!Broadcaster) {
-    throw new Error('No broadcaster!')
+    throw new Error('Primary broadcaster does not exist')
   }
   return Broadcaster;
 }
@@ -23,7 +23,7 @@ const getSecondaryBroadcaster = async () => {
     }
   });
   if (!Broadcaster) {
-    throw new Error('No secondary broadcaster!')
+    throw new Error('Secondary broadcaster does not exist')
   }
   return Broadcaster;
 }

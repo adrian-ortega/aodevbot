@@ -5,7 +5,11 @@ exports.getBroadcaster = async (req, res) => {
   try {
     data = await getBroadcaster()
   } catch (error) {
-    data = { error: true, message: error.message }
+    data = {
+      type: 1,
+      error: true,
+      message: error.message
+    }
   }
   res.send(data)
 };
@@ -15,7 +19,11 @@ exports.getSecondaryBroadcaster = async (req, res) => {
   try {
     data = await getSecondaryBroadcaster()
   } catch (error) {
-    data = { error: true, message: error.message }
+    data = {
+      type: 2,
+      error: true,
+      message: error.message
+    }
   }
   res.send(data)
 }
