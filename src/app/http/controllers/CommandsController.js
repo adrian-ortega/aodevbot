@@ -1,4 +1,4 @@
-const { ChatCommands } = require('../../models');
+const { ChatCommands, Sequelize } = require('../../models');
 const { getCommands: getChatCommands } = require('../../twitch/chat');
 const total = 42;
 
@@ -8,13 +8,14 @@ exports.getCommands = async (req, res) => {
   let data = [];
 
   page = page ? parseInt(page, 10) : 1;
-  limit = limit ? parseInt(limit, 19) : 10;
+  limit = !isNaN(limit) && isFinite(limit) ? parseInt(limit, 10) : 10;
   const offset = 0;
-
-  const pagination = {
-    page,
-    pages: Math.ceil(total/limit),
-    total
+  const pagination = {};
+  const updatePagination = (total) => {
+    pagination.page = page;
+    pagination.limit = limit;
+    pagination.pages = Math.ceil(total / limit);
+    pagination.total = total;
   }
 
   switch (type) {
@@ -22,9 +23,25 @@ exports.getCommands = async (req, res) => {
       data = getChatCommands();
       break;
     case 'custom':
-      data = await ChatCommands.findAll({
-        limit
-      });
+      const where = {};
+
+      if (search && search.length > 0) {
+        where[Sequelize.Op.or] = [
+          { command_name: { [Sequelize.Op.like]: `%${search}%` } },
+          { command_reply: { [Sequelize.Op.like]: `%${search}%` } },
+        ];
+      }
+
+      data = await ChatCommands.findAll({ where, limit, offset });
+      data = data.map((row) => {
+        return {
+          id: row.id,
+          name: row.command_name,
+          description: 'NONE'
+        }
+      })
+
+      updatePagination(data.length);
     default:
       break;
   }
