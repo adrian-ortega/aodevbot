@@ -1,13 +1,15 @@
+const { ChatCommands } = require('../../models');
 const { getCommands: getChatCommands } = require('../../twitch/chat');
 const total = 42;
 
-exports.getCommands = (req, res) => {
+exports.getCommands = async (req, res) => {
   const { type, search } = req.query;
   let { page, limit } = req.query;
   let data = [];
 
   page = page ? parseInt(page, 10) : 1;
   limit = limit ? parseInt(limit, 19) : 10;
+  const offset = 0;
 
   const pagination = {
     page,
@@ -16,14 +18,13 @@ exports.getCommands = (req, res) => {
   }
 
   switch (type) {
-    case 'custom':
+    case 'general':
       data = getChatCommands();
       break;
-    case 'general':
-      data = new Array(10).fill(0).map((_, i) => ({
-        id: i,
-        name: 'Some Name ' + i,
-      }));
+    case 'custom':
+      data = await ChatCommands.findAll({
+        limit
+      });
     default:
       break;
   }

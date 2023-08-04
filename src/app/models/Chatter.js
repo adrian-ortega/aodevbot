@@ -1,6 +1,6 @@
 const ChatterModel = (sequelize, Sequelize) => {
   const { BIGINT, INTEGER, STRING, BOOLEAN } = Sequelize;
-  const Chatter = sequelize.define('Chatter', {
+  const Chatter = sequelize.define('chatter', {
     id: { type: INTEGER, primaryKey: true, autoIncrement: true },
     twitch_id: { type: INTEGER, primaryKey: true },
     username: { type: STRING },

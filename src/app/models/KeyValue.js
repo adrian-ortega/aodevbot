@@ -2,7 +2,7 @@ const { isObject } = require("../support");
 
 const KeyValueModel = (sequelize, Sequelize) => {
   const { TEXT, INTEGER, STRING } = Sequelize;
-  const KeyValue = sequelize.define('KeyValue', {
+  const KeyValue = sequelize.define('key-value', {
     id: { type: INTEGER, primaryKey: true, autoIncrement: true },
     item_key: { type: STRING },
     item_value: {

@@ -1,7 +1,7 @@
 const ChatPointsModel = (sequelize, Sequelize) => {
-  const { Chatter } = sequelize.models;
+  const Chatter = sequelize.models.chatter;
   const { BIGINT, INTEGER, STRING } = Sequelize;
-  const ChatPoints = sequelize.define('ChatPoints', {
+  const ChatPoints = sequelize.define('chat-points', {
     id: { type: INTEGER, primaryKey: true, autoIncrement: true },
     stream_id: { type: BIGINT },
     chatter_id: { type: BIGINT },
