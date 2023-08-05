@@ -51,3 +51,26 @@ exports.getCommands = async (req, res) => {
     pagination
   })
 };
+
+exports.createCommand = async (req, res) => {
+  if (!req.body.command_name || !req.body.command_reply) {
+    return res.status(400).send({
+      message: 'Missing Content'
+    })
+  }
+
+  const command = {
+    command_type: 1,
+    command_enabled: 0,
+    command_name: req.body.command_name,
+    command_reply: req.body.command_reply,
+    command_options: {
+      count: 0,
+      permission: req.body.permission || 1
+    }
+  }
+
+  ChatCommands.create(command)
+
+  res.send({ data: {} });
+}
