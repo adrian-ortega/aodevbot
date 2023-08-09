@@ -4,7 +4,7 @@ const logPrefix = 'Twitch Chat';
 const chalk = require('chalk');
 
 const commands = require('./chat/commands');
-const initCommands = require('./chat/commands/dictionary');
+const { initCommands } = require('./chat/commands/dictionary');
 const events = require('./chat/events');
 const initEvents = require('./chat/events/dictionary');
 

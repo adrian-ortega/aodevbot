@@ -96,9 +96,7 @@ exports.append = (command, message = null) => {
   if (isString(command)) {
     command = createGenericCommand(command, message);
   }
-
-  // @TODO before we push into memory, store it in DB somehow
-
+  
   if (!validate(command)) {
     throw new Error('Invalid Command', { command });
   }
