@@ -21,14 +21,14 @@ const commandsTransformer = (row) => {
   }
 }
 
-exports.getCommands = async (req, res) => {
+exports.list = async (req, res) => {
   const { search } = req.query;
   let { type, page, limit } = req.query;
   let data = [];
 
   page = page ? parseInt(page, 10) : 1;
   limit = !isNaN(limit) && isFinite(limit) ? parseInt(limit, 10) : 10;
-  const offset = 0;
+  const offset = (page - 1) * limit;
   const pagination = {};
   const where = {};
 
@@ -45,22 +45,41 @@ exports.getCommands = async (req, res) => {
   if (search && search.length > 0) {
     where[Sequelize.Op.or] = [
       { name: { [Sequelize.Op.like]: `%${search}%` } },
-      { reply: { [Sequelize.Op.like]: `%${search}%` } },
+      { response: { [Sequelize.Op.like]: `%${search}%` } },
     ];
   }
 
-  data = await ChatCommands.findAll({ where, limit, offset });
-  data = data.map(commandsTransformer)
+  data = await ChatCommands.findAndCountAll({ where, limit, offset });
+  console.log({ where, limit, offset })
+  const rows = data.rows.map(commandsTransformer)
 
-  updatePagination(data.length);
+  updatePagination(data.count);
   
   res.send({
-    data,
+    data:rows,
     pagination
   })
 };
 
-exports.createCommand = async (req, res) => {
+exports.detail = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const command = await ChatCommands.findByPk(id);
+    if (!command) {
+      return res.status(404).send({
+        message: "Not found"
+      })
+    }
+    res.send({ data: commandsTransformer(command) })
+  } catch (err) {
+    return res.status(500).send({
+      message: err.message || 'Something went wrong'
+    });
+  }
+
+}
+
+exports.create = async (req, res) => {
   if (!req.body.name || !req.body.response) {
     return res.status(400).send({
       message: 'Missing Content'
@@ -79,4 +98,22 @@ exports.createCommand = async (req, res) => {
   })
 
   res.send({ data: commandsTransformer(command) });
+}
+
+exports.update = async (req, res) => {
+
+}
+
+exports.destroy = async (req, res) => {
+  
+}
+exports.listTemplates = async (req, res) => {
+  res.send({
+    data: [
+      {
+        name: 'hug',
+        response: 'Awe! {0} hugged {1}'
+      }
+    ]
+  })
 }
