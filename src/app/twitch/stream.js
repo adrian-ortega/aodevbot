@@ -51,7 +51,7 @@ const syncStream = async () => {
     return;
   }
 
-  const Stream = await Streams.findOrCreate({
+  await Streams.findOrCreate({
     where: {
       stream_id: stream.id,
       game_id: stream.game_id,
@@ -65,7 +65,7 @@ const syncStream = async () => {
     },
   });
 
-  const Game = await Games.findOrCreate({
+  await Games.findOrCreate({
     where: {
       game_id: stream.game_id,
     },

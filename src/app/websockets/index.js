@@ -3,14 +3,13 @@ const logPrefix = "WS";
 const queryString = require("query-string");
 const WebSocket = require("ws");
 const { fireActions } = require("./actions");
-const { objectHasProp, isArray, isString, isObject } = require("../support");
+const { isArray, isString, isObject } = require("../support");
 const { fireEventListeners } = require("./events");
 
 let webSocketServer;
 
 const wsResponse = async (ws, request, response) => {
-  const hasMessage = objectHasProp(response, "message");
-  let { message, user, action, actions, ...deltaResponse } = response;
+  let { action, actions } = response;
 
   if (isArray(actions)) await fireActions(actions);
   if (isString(action)) action = { id: action, args: [] };
@@ -25,7 +24,7 @@ const wsEventResponse = async (ws, { event, payload, ...data }) => {
 };
 
 const onServerConnection = (webSocketConnection, connectionRequest) => {
-  const [path, params] = connectionRequest?.url?.split("?") || [null, null];
+  const [, params] = connectionRequest?.url?.split("?") || [null, null];
   const connectionParams = queryString.parse(params);
 
   webSocketConnection.on("message", (message) => {

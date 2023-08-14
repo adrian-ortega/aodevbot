@@ -1,7 +1,7 @@
 const log = require("../log");
 const logPrefix = "Twitch Tokens";
 const { getBroadcaster } = require("../broadcaster");
-const { Chatters, Tokens, Sequelize } = require("../models");
+const { Chatters, Tokens } = require("../models");
 
 const token_type = "twitch";
 
@@ -9,7 +9,7 @@ const token_type = "twitch";
 let chatter_id = 0;
 
 let currentToken;
-  let currentTokenOverride = false;
+let currentTokenOverride = false;
 
 exports.loadAccessToken = async () => {
   if (!currentTokenOverride) {

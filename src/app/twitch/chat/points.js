@@ -1,5 +1,3 @@
-const log = require("../../log");
-const logPrefix = "Twitch Points";
 const Timestamps = require("../../support/timestamps");
 const { Watchtime, Chatters, ChatPoints } = require("../../models");
 const { ONE_MINUTE } = require("../../support/time");

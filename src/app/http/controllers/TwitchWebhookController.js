@@ -3,12 +3,12 @@
 //       LIVE SERVER
 //
 
-const handleWebhookCallbackVerification = () => {};
+// const handleWebhookCallbackVerification = () => {};
 
-const handleNotification = () => {};
-const handleRevocation = () => {};
-const successMethod = () => {};
-const missingMethod = () => {};
+// const handleNotification = () => {};
+// const handleRevocation = () => {};
+// const successMethod = () => {};
+// const missingMethod = () => {};
 
 exports.status = async (req, res) => {
   const Twitch = require("../../twitch");

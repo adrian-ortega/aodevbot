@@ -18,6 +18,7 @@ exports.handle = async (
   resolve,
 ) => {
   let twitch_id = state[USER_ID];
+  let chatMessage;
   const broadcaster = await getBroadcaster();
   const broadcaster_name = broadcaster.display_name;
 

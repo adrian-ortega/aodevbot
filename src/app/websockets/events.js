@@ -1,6 +1,6 @@
 const log = require("../log");
 const logPrefix = "WS Events";
-const { isFunction, objectHasProp, wait } = require("../support");
+const { isFunction } = require("../support");
 
 const events = [];
 const listeners = {};

@@ -4,7 +4,6 @@ const client = require("axios");
 const moment = require("moment");
 const TokensStore = require("./tokens");
 const { Tokens } = require("../models");
-const { getUser } = require("./users");
 const {
   getBroadcaster,
   PRIMARY_BROADCASTER,
@@ -35,10 +34,8 @@ exports.refreshAccessToken = async () => {
     log.error("refreshAccessToken", {
       message: err.message,
     });
-    return false;
   }
-
-  return true;
+  return false;
 };
 
 exports.getAuthTokenFromCode = async (code, redirect_uri) => {

@@ -63,7 +63,7 @@ exports.update = (req, res) => {
     where: { id },
   })
     .then((num) => {
-      if (num == 1) {
+      if (num === 1) {
         res.send({
           message: "Chatter was updated successfully.",
         });
@@ -87,7 +87,7 @@ exports.destroy = (req, res) => {
     where: { id },
   })
     .then((num) => {
-      if (num == 1) {
+      if (num === 1) {
         res.send({
           message: "Chatter was deleted successfully!",
         });

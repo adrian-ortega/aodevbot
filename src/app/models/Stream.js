@@ -1,5 +1,5 @@
 const StreamModel = (sequelize, Sequelize) => {
-  const { BIGINT, INTEGER, STRING, BOOLEAN, DATE } = Sequelize;
+  const { BIGINT, INTEGER, STRING, DATE } = Sequelize;
   const Stream = sequelize.define("stream", {
     id: { type: INTEGER, primaryKey: true, autoIncrement: true },
     stream_id: { type: BIGINT, primaryKey: true },

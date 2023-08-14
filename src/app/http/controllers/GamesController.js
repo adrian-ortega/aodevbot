@@ -62,7 +62,7 @@ exports.update = (req, res) => {
     where: { id },
   })
     .then((num) => {
-      if (num == 1) {
+      if (num === 1) {
         res.send({
           message: "Game was updated successfully.",
         });
@@ -86,7 +86,7 @@ exports.destroy = (req, res) => {
     where: { id },
   })
     .then((num) => {
-      if (num == 1) {
+      if (num === 1) {
         res.send({
           message: "Game was deleted successfully!",
         });

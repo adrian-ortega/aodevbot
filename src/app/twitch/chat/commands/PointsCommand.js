@@ -1,4 +1,4 @@
-const { ChatPoints, Chatters } = require("../../../models");
+const { Chatters } = require("../../../models");
 const { USER_DISPLAY_NAME, USER_ID } = require("../state-keys");
 
 exports.name = () => {

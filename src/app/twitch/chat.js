@@ -29,10 +29,9 @@ const TMI_SENT_STAMP = "tmi-sent-ts";
 
 const tmi = require("tmi.js");
 let tmiConnected;
-  let tmiConnectRetries = 0;
+let tmiConnectRetries = 0;
 
 let client;
-let current_message;
 
 const getChatterFromChatState = async (state) => {
   const chatterResults = await Chatters.findOrCreate({
@@ -113,7 +112,7 @@ const onJoin = async (channel, username, self) => {
   // @TODO send event to Chat log?
 };
 
-const triggerSelfEvents = () => {};
+const triggerSelfEvents = () => { };
 
 const onMessage = async (channel, state, message, self) => {
   try {
@@ -121,7 +120,6 @@ const onMessage = async (channel, state, message, self) => {
       return triggerSelfEvents(channel, state, message);
     }
     await logMessage(message, state);
-    current_message = { message, state };
 
     // @TODO Implement dev web socket with debug chat component
     //
