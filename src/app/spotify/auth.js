@@ -4,10 +4,19 @@ const log = require("../log");
 const logPrefix = "Twitch Auth";
 const { isEmpty } = require("../support");
 
-const accessTokenHeaders = {
-  "Content-Type": "application/x-www-form-urlencoded",
+const clientOptions = {
+  headers: { "Content-Type": "application/x-www-form-urlencoded" },
   auth: [config.SPOTIFY_CLIENT_ID, config.SPOTIFY_CLIENT_SECRET],
 };
+
+const getClientOptions = () => {
+  return {
+    headers: {
+      Authorization: `Basic ${Buffer.from(`${config.SPOTIFY_CLIENT_ID}:${config.SPOTIFY_CLIENT_SECRET}`).toString('base64')}`,
+      "Content-Type": "application/x-www-form-urlencoded"
+    }
+  }
+}
 
 exports.refreshAccessToken = async (refresh_token) => {
   try {
@@ -17,9 +26,7 @@ exports.refreshAccessToken = async (refresh_token) => {
         grant_type: "refresh_token",
         refresh_token,
       },
-      {
-        headers: accessTokenHeaders,
-      },
+      getClientOptions(),
     );
     return await response.json();
   } catch (err) {
@@ -38,17 +45,18 @@ exports.getAuthTokenFromCode = async (
     if (isEmpty(code) || isEmpty(redirect_uri)) {
       throw new Error("Missing params");
     }
-    const response = await client.post(
-      "https://accounts.spotify.com/api/token",
-      {
-        headers: accessTokenHeaders,
-      },
-    );
-
-    // @TODO finish this implementation
+    const requestOptions = {
+      grant_type: 'authorization_code',
+      code,
+      redirect_uri
+    }
+    const { data } = await client.post("https://accounts.spotify.com/api/token", requestOptions, getClientOptions());
+    return data;
   } catch (err) {
-    //
+    console.log(err)
   }
+
+  return null
 };
 
 exports.getAuthURL = (redirect_uri) => {
