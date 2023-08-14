@@ -1,29 +1,32 @@
-const { getBroadcaster, getSecondaryBroadcaster } = require('../../broadcaster')
+const {
+  getBroadcaster,
+  getSecondaryBroadcaster,
+} = require("../../broadcaster");
 
 exports.getBroadcaster = async (req, res) => {
-  let data
+  let data;
   try {
-    data = await getBroadcaster()
+    data = await getBroadcaster();
   } catch (error) {
     data = {
       type: 1,
       error: true,
-      message: error.message
-    }
+      message: error.message,
+    };
   }
-  res.send(data)
-}
+  res.send(data);
+};
 
 exports.getSecondaryBroadcaster = async (req, res) => {
-  let data
+  let data;
   try {
-    data = await getSecondaryBroadcaster()
+    data = await getSecondaryBroadcaster();
   } catch (error) {
     data = {
       type: 2,
       error: true,
-      message: error.message
-    }
+      message: error.message,
+    };
   }
-  res.send(data)
-}
+  res.send(data);
+};

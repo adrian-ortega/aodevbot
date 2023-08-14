@@ -1,6 +1,6 @@
-const registeredEvents = [require('./FirstToChatEvent')]
+const registeredEvents = [require("./FirstToChatEvent")];
 
 module.exports = (events) => {
-  events.clear()
-  registeredEvents.forEach((event) => events.append(event))
-}
+  events.clear();
+  registeredEvents.forEach((event) => events.append(event));
+};

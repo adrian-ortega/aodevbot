@@ -1,10 +1,10 @@
-const router = require('express').Router()
-const controller = require('../controllers/GamesController')
+const router = require("express").Router();
+const controller = require("../controllers/GamesController");
 
-router.get('/', controller.list)
-router.post('/', controller.create)
-router.get('/:id', controller.detail)
-router.patch('/:id', controller.update)
-router.delete('/:id', controller.destroy)
+router.get("/", controller.list);
+router.post("/", controller.create);
+router.get("/:id", controller.detail);
+router.patch("/:id", controller.update);
+router.delete("/:id", controller.destroy);
 
-module.exports = router
+module.exports = router;

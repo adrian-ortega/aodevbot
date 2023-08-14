@@ -3,9 +3,9 @@
   "version": "0.0.1",
   "main": "server.js",
   "scripts": {
-    "lint": "npx eslint src test",
+    "lint": "npx eslint ./app",
     "lint:fix": "npm run lint -- --fix",
-    "prettier": "npx prettier src test --check",
+    "prettier": "npx prettier ./app --check",
     "prettier:fix": "npm run prettier -- --write",
     "format": "npm run prettier:fix && npm run lint:fix",
     "nodemon": "nodemon ./server.js --ignore 'storage/'",
