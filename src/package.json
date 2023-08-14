@@ -3,8 +3,11 @@
   "version": "0.0.1",
   "main": "server.js",
   "scripts": {
-    "lint": "npm eslint ./app",
-    "prettier": "npx prettier ./app --write",
+    "lint": "npx eslint src test",
+    "lint:fix": "npm run lint -- --fix",
+    "prettier": "npx prettier src test --check",
+    "prettier:fix": "npm run prettier -- --write",
+    "format": "npm run prettier:fix && npm run lint:fix",
     "nodemon": "nodemon ./server.js --ignore 'storage/'",
     "serve": "node ./server.js",
     "dev": "npm-run-all --parallel nodemon"
