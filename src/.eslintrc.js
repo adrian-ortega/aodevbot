@@ -1,5 +1,6 @@
 module.exports = {
   extends: [
-    'semistandard'
+    'semistandard',
+    'prettier'
   ]
 };

@@ -1,20 +1,21 @@
-const log = require('../log');
-const logPrefix = 'Twitch Tokens';
-const { getBroadcaster } = require('../broadcaster');
-const { Chatters, Tokens, Sequelize } = require('../models');
+const log = require('../log')
+const logPrefix = 'Twitch Tokens'
+const { getBroadcaster } = require('../broadcaster')
+const { Chatters, Tokens, Sequelize } = require('../models')
 
-const token_type = 'twitch';
+const token_type = 'twitch'
 
 // @TODO Update this to pull the chatter id from token
-let chatter_id = 0;
+let chatter_id = 0
 
-let currentToken, currentTokenOverride = false;
+let currentToken,
+  currentTokenOverride = false
 
 exports.loadAccessToken = async () => {
   if (!currentTokenOverride) {
     try {
-      const broadcaster = await getBroadcaster();
-      chatter_id = broadcaster.id;
+      const broadcaster = await getBroadcaster()
+      chatter_id = broadcaster.id
 
       const results = await Tokens.findAll({
         where: {
@@ -23,46 +24,53 @@ exports.loadAccessToken = async () => {
         },
         limit: 1,
         order: [['expires', 'DESC']]
-      });
+      })
       if (results.length > 0) {
-        chatter_id = broadcaster.id;
-        currentToken = results.shift();
+        chatter_id = broadcaster.id
+        currentToken = results.shift()
       }
     } catch (err) {
-      log.error('Twitch.tokens.load', {
-        message: err.message
-      }, logPrefix);
+      log.error(
+        'Twitch.tokens.load',
+        {
+          message: err.message
+        },
+        logPrefix
+      )
     }
   }
-  return currentToken;
+  return currentToken
 }
 
 exports.setTokenOwner = async (chatter_id) => {
   if (currentToken) {
-    return Tokens.update({ chatter_id }, {
-      where: { id: currentToken.id }
-    });
+    return Tokens.update(
+      { chatter_id },
+      {
+        where: { id: currentToken.id }
+      }
+    )
   }
 
-  return null;
+  return null
 }
 
 exports.getTokenOwner = async () => {
-  await this.loadAccessToken();
-  return currentToken ? Chatters.findByPk(currentToken.chatter_id) : 0;
-};
+  await this.loadAccessToken()
+  return currentToken ? Chatters.findByPk(currentToken.chatter_id) : 0
+}
 
-exports.getTokenType = () => token_type;
+exports.getTokenType = () => token_type
 
-exports.getToken = () => currentToken;
+exports.getToken = () => currentToken
 
-exports.getAccessToken = () => currentToken ? currentToken.access_token : null;
+exports.getAccessToken = () => (currentToken ? currentToken.access_token : null)
 
-exports.getRefreshToken = () => currentToken ? currentToken.refresh_token : null;
+exports.getRefreshToken = () => (currentToken ? currentToken.refresh_token : null)
 
 exports.overrideCurrentToken = (override) => {
-  currentTokenOverride = override;
-};
+  currentTokenOverride = override
+}
 
 exports.setAccessToken = async ({ access_token, refresh_token }, expires, scope) => {
   const results = await Tokens.findOrCreate({
@@ -78,6 +86,6 @@ exports.setAccessToken = async ({ access_token, refresh_token }, expires, scope)
       expires,
       scope
     }
-  });
-  currentToken = results.shift();
-};
+  })
+  currentToken = results.shift()
+}

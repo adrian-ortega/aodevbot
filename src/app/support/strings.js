@@ -8,7 +8,7 @@ const PLURAL_MAP = {
   '(hive)$': '$1s',
   '(?:([^f])fe|([lr])f)$': '$1$2ves',
   '(shea|lea|loa|thie)f$': '$1ves',
-  'sis$': 'ses',
+  sis$: 'ses',
   '([ti])um$': '$1a',
   '(tomat|potat|ech|her|vet)o$': '$1oes',
   '(bu)s$': '$1ses',
@@ -17,79 +17,98 @@ const PLURAL_MAP = {
   '(ax|test)is$': '$1es',
   '(us)$': '$1es',
   '([^s]+)$': '$1s'
-};
+}
 const PLURAL_IRREGULAR = {
-  'move': 'moves',
-  'foot': 'feet',
-  'goose': 'geese',
-  'sex': 'sexes',
-  'child': 'children',
-  'man': 'men',
-  'tooth': 'teeth',
-  'person': 'people'
-};
+  move: 'moves',
+  foot: 'feet',
+  goose: 'geese',
+  sex: 'sexes',
+  child: 'children',
+  man: 'men',
+  tooth: 'teeth',
+  person: 'people'
+}
 const PLURAL_UNCOUNTABLE = [
-  'sheep', 'fish', 'deer', 'moose', 'series', 'species', 'money', 'rice', 'information', 'equipment', 'bison', 'cod',
-  'offspring', 'pike', 'salmon', 'shrimp', 'swine', 'trout', 'aircraft', 'hovercraft', 'spacecraft', 'sugar',
-  'tuna', 'you', 'wood'
-];
+  'sheep',
+  'fish',
+  'deer',
+  'moose',
+  'series',
+  'species',
+  'money',
+  'rice',
+  'information',
+  'equipment',
+  'bison',
+  'cod',
+  'offspring',
+  'pike',
+  'salmon',
+  'shrimp',
+  'swine',
+  'trout',
+  'aircraft',
+  'hovercraft',
+  'spacecraft',
+  'sugar',
+  'tuna',
+  'you',
+  'wood'
+]
 
 const plural = (word, amount = 1) => {
   if (amount !== undefined && amount === 1) {
-    return word;
+    return word
   }
 
   if (PLURAL_UNCOUNTABLE.indexOf(word.toLowerCase()) > -1) {
-    return word;
+    return word
   }
 
   for (const w in PLURAL_IRREGULAR) {
-    const pattern = new RegExp(`${w}$`, 'i');
-    const replace = PLURAL_IRREGULAR[w];
+    const pattern = new RegExp(`${w}$`, 'i')
+    const replace = PLURAL_IRREGULAR[w]
     if (pattern.test(word)) {
-      return word.replace(pattern, replace);
+      return word.replace(pattern, replace)
     }
   }
 
   for (const reg in PLURAL_MAP) {
-    const pattern = new RegExp(reg, 'i');
+    const pattern = new RegExp(reg, 'i')
     if (pattern.test(word)) {
-      return word.replace(pattern, PLURAL_MAP[reg]);
+      return word.replace(pattern, PLURAL_MAP[reg])
     }
   }
 
-  return word;
-};
+  return word
+}
 
 const pregMatchAll = (regex, str) => {
-  const newRegex = new RegExp(regex, 'g');
-  const regexMatchResult = str.matchAll(newRegex);
-  const matches = [...regexMatchResult];
+  const newRegex = new RegExp(regex, 'g')
+  const regexMatchResult = str.matchAll(newRegex)
+  const matches = [...regexMatchResult]
 
   const reducer = (acc, group) => {
-
     const filterStringValues = (val) => {
-      return typeof val === 'string';
-    };
+      return typeof val === 'string'
+    }
 
     const aggregator = (item, index) => {
       if (!acc[index]) {
-        acc[index] = [];
+        acc[index] = []
       }
-      acc[index].push(item);
-    };
+      acc[index].push(item)
+    }
 
-    group
-      .filter(filterStringValues)
-      .forEach(aggregator);
+    group.filter(filterStringValues).forEach(aggregator)
 
-    return acc;
-  };
+    return acc
+  }
 
-  return matches.reduce(reducer, [])[1];
-};
+  return matches.reduce(reducer, [])[1]
+}
 
 module.exports = {
   pregMatchAll,
   plural
-};
+}

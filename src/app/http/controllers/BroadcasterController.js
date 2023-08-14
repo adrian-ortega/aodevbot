@@ -1,7 +1,7 @@
-const { getBroadcaster, getSecondaryBroadcaster } = require("../../broadcaster")
+const { getBroadcaster, getSecondaryBroadcaster } = require('../../broadcaster')
 
 exports.getBroadcaster = async (req, res) => {
-  let data;
+  let data
   try {
     data = await getBroadcaster()
   } catch (error) {
@@ -12,10 +12,10 @@ exports.getBroadcaster = async (req, res) => {
     }
   }
   res.send(data)
-};
+}
 
 exports.getSecondaryBroadcaster = async (req, res) => {
-  let data;
+  let data
   try {
     data = await getSecondaryBroadcaster()
   } catch (error) {

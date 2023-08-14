@@ -1,13 +1,13 @@
-const { loadFile, saveFile } = require('./files');
-const { isObject, objectHasProp, isArray } = require('./index');
+const { loadFile, saveFile } = require('./files')
+const { isObject, objectHasProp, isArray } = require('./index')
 
 class JSONFileStorage {
   constructor(filepath, data, autoload = false) {
-    this.filepath = filepath;
-    this.data = data;
-    this.autoload = autoload;
+    this.filepath = filepath
+    this.data = data
+    this.autoload = autoload
     if (autoload) {
-      this.runAutoload();
+      this.runAutoload()
     }
   }
 
@@ -16,32 +16,32 @@ class JSONFileStorage {
   }
 
   has(id) {
-    this.refresh();
+    this.refresh()
     return objectHasProp(this.data, id)
   }
 
   get(id, defaultValue = null) {
-    this.refresh();
-    return this.has(id) ? this.data[id] : defaultValue;
+    this.refresh()
+    return this.has(id) ? this.data[id] : defaultValue
   }
 
   getOrCreate(id, createValue = null) {
-    this.refresh();
+    this.refresh()
     if (!this.has(id)) {
-      this.put(id, createValue);
+      this.put(id, createValue)
     }
-    return this.get(id);
+    return this.get(id)
   }
 
   put(id, value) {
-    const sanitize = (a) => isObject(a) ? { ...a } : isArray(a) ? [...a] : a;
+    const sanitize = (a) => (isObject(a) ? { ...a } : isArray(a) ? [...a] : a)
 
     // @TODO implement a way to "put" multiple values
     //       when the ID variable is an object with keys itself
 
-    this.data[id] = sanitize(value);
+    this.data[id] = sanitize(value)
 
-    return this.save();
+    return this.save()
   }
 
   remove(id) {
@@ -53,20 +53,20 @@ class JSONFileStorage {
   }
 
   refresh(defaultValue = {}) {
-    this.data = this.loadFile(defaultValue);
+    this.data = this.loadFile(defaultValue)
     if (!isObject(this.data) || this.data === null) {
-      this.data = defaultValue;
+      this.data = defaultValue
     }
-    return true;
+    return true
   }
 
   save(data = undefined) {
-    if (!data) data = this.data;
+    if (!data) data = this.data
     return this.saveFile(data)
   }
 
   saveFile(data) {
-    return saveFile(this.filepath, data, this.fileWriteParser.bind(this));
+    return saveFile(this.filepath, data, this.fileWriteParser.bind(this))
   }
 
   loadFile(defaultValue = {}) {
@@ -79,14 +79,14 @@ class JSONFileStorage {
   }
 
   fileWriteParser(value) {
-    return JSON.stringify(value);
+    return JSON.stringify(value)
   }
 
   fileReadParser(value) {
-    return JSON.parse(value);
+    return JSON.parse(value)
   }
 }
 
 module.exports = (filepath, data, autoload = false) => {
-  return new JSONFileStorage(filepath, data, autoload);
+  return new JSONFileStorage(filepath, data, autoload)
 }

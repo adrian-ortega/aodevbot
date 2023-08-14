@@ -1,9 +1,9 @@
-const log = require('../log');
-const client = require('./client');
-const { FIVE_MINUTES } = require('../support/time');
-const { pregMatchAll } = require('../support/strings');
-const { getBroadcaster } = require('../broadcaster');
-const { Streams, Games } = require('../models');
+const log = require('../log')
+const client = require('./client')
+const { FIVE_MINUTES } = require('../support/time')
+const { pregMatchAll } = require('../support/strings')
+const { getBroadcaster } = require('../broadcaster')
+const { Streams, Games } = require('../models')
 
 const getStreams = async (user_login) => {
   try {
@@ -12,44 +12,44 @@ const getStreams = async (user_login) => {
         first: 1,
         user_login
       }
-    });
-    return data;
+    })
+    return data
   } catch (err) {
     log.error('getStreams', { err }, 'Twitch Streams')
   }
 
-  return { data: [], pagination: [] };
-};
+  return { data: [], pagination: [] }
+}
 
 const getBroadcasterStreams = async (single = false) => {
-  const broadcaster = await getBroadcaster();
-  const { data } = await getStreams(broadcaster.username);
-  const streams = data.map(stream => {
+  const broadcaster = await getBroadcaster()
+  const { data } = await getStreams(broadcaster.username)
+  const streams = data.map((stream) => {
     if (stream.title) {
-      stream.title_tags = pregMatchAll(/(?:^|\s)#(\w+)/, stream.title);
+      stream.title_tags = pregMatchAll(/(?:^|\s)#(\w+)/, stream.title)
     }
-    return stream;
-  });
+    return stream
+  })
 
-  return single ? streams[0] : streams;
-};
+  return single ? streams[0] : streams
+}
 
 const getStreamId = async () => {
-  const stream = await getBroadcasterStreams(true);
-  return stream ? stream.id : null;
-};
+  const stream = await getBroadcasterStreams(true)
+  return stream ? stream.id : null
+}
 
-let syncing = false;
+let syncing = false
 const syncStream = async () => {
   if (syncing) {
-    return false;
+    return false
   }
 
-  syncing = true;
-  const stream = await getBroadcasterStreams(true);
+  syncing = true
+  const stream = await getBroadcasterStreams(true)
   if (!stream || !stream.id) {
-    return;
-  };
+    return
+  }
 
   const Stream = await Streams.findOrCreate({
     where: {
@@ -61,40 +61,40 @@ const syncStream = async () => {
       stream_id: stream.id,
       game_id: stream.game_id,
       title: stream.title,
-      started_at: stream.started_at,
+      started_at: stream.started_at
     }
-  });
+  })
 
   const Game = await Games.findOrCreate({
     where: {
-      game_id: stream.game_id,
+      game_id: stream.game_id
     },
     defaults: {
       game_id: stream.game_id,
-      game_name: stream.game_name,
+      game_name: stream.game_name
     }
-  });
+  })
 
-  syncing = false;
+  syncing = false
 
   // @TODO implement counters;
-};
+}
 
 const getStreamChatters = async () => {
   try {
-    const broadcaster = await getBroadcaster();
+    const broadcaster = await getBroadcaster()
     const { data } = await client.get(`/helix/chat/chatters`, {
       params: {
         broadcaster_id: broadcaster.twitch_id,
         moderator_id: broadcaster.twitch_id
       }
     })
-    return data;
+    return data
   } catch (err) {
-    log.error('getStreamChatters', { message: err.message }, 'Twitch Streams');
+    log.error('getStreamChatters', { message: err.message }, 'Twitch Streams')
   }
 
-  return [];
+  return []
 }
 
 const getSubscriptions = async (broadcaster_id, after = null) => {
@@ -105,40 +105,41 @@ const getSubscriptions = async (broadcaster_id, after = null) => {
     }
 
     if (after) {
-      params.after = after;
+      params.after = after
     }
-    const { data } = await client.get('/helix/subscriptions', { params });
-    return data;
+    const { data } = await client.get('/helix/subscriptions', { params })
+    return data
   } catch (err) {
-    log.error('getSubscriptions', { message: err.message }, 'Twitch Streams');
+    log.error('getSubscriptions', { message: err.message }, 'Twitch Streams')
   }
-  return [];
+  return []
 }
 
 const getBroadcasterSubscribers = async () => {
   try {
-    const broadcaster = await getBroadcaster();
-    let response = await getSubscriptions(broadcaster.twitch_id);
-    let data = [...response.data];
+    const broadcaster = await getBroadcaster()
+    let response = await getSubscriptions(broadcaster.twitch_id)
+    let data = [...response.data]
     while (response.pagination.cursor) {
-      response = await getSubscriptions(broadcaster.twitch_id, response.pagination.cursor);
-      data = [...response.data];
+      response = await getSubscriptions(broadcaster.twitch_id, response.pagination.cursor)
+      data = [...response.data]
     }
-    return data;
+    return data
   } catch (err) {
-    log.error('getStreamChatters', { message: err.message }, 'Twitch Streams');
+    log.error('getStreamChatters', { message: err.message }, 'Twitch Streams')
   }
-  return [];
+  return []
 }
 
-let streamSyncId;
+let streamSyncId
 
 const initStreamSync = () => {
-  const sync = async () => syncStream().then(() => {
-    streamSyncId = setTimeout(sync, FIVE_MINUTES);
-  });
-  clearTimeout(streamSyncId);
-  sync();
+  const sync = async () =>
+    syncStream().then(() => {
+      streamSyncId = setTimeout(sync, FIVE_MINUTES)
+    })
+  clearTimeout(streamSyncId)
+  sync()
 }
 
 module.exports = {
@@ -148,5 +149,5 @@ module.exports = {
   getStreamChatters,
   getBroadcasterSubscribers,
   getBroadcasterStreams,
-  syncStream,
+  syncStream
 }

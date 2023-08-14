@@ -1,5 +1,5 @@
 const config = require('../../../config')
-const redirect_uri = `http://${config.HOST}:${config.PORT}/api/spotify/authenticate/confirm`;
+const redirect_uri = `http://${config.HOST}:${config.PORT}/api/spotify/authenticate/confirm`
 
 exports.authenticate = (req, res) => {
   const Spotify = require('../../spotify')
@@ -13,6 +13,7 @@ exports.authConfirm = async (req, res) => {
   let { code, state } = req.query
 
   res.send({
-    code, state
+    code,
+    state
   })
 }

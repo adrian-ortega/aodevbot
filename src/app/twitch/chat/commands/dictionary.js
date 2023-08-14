@@ -18,14 +18,20 @@ const registeredCommands = [
   require('./PointsCommand'),
   require('./RedeemCommand'),
   require('./CommandsCommand') // Must be last in the list
-];
+]
 
 const initCommands = (commands) => {
-  commands.clear();
+  commands.clear()
   registeredCommands.forEach(async (command) => {
-    let names = getValue(command.name);
+    let names = getValue(command.name)
     if (isString(names)) {
-      names = [...names.split(',').map(s => s.trim()).filter(a => a).values()];
+      names = [
+        ...names
+          .split(',')
+          .map((s) => s.trim())
+          .filter((a) => a)
+          .values()
+      ]
     }
     const cmd = {
       type: COMMAND_TYPES.custom,
@@ -36,19 +42,19 @@ const initCommands = (commands) => {
       options: getValue(command.options)
     }
     const exists = await ChatCommands.findOne({
-      where: { 
+      where: {
         type: cmd.type,
         name: cmd.name
       }
     })
 
     if (!exists) {
-      await ChatCommands.create(cmd);
+      await ChatCommands.create(cmd)
     }
-    
+
     commands.append(command)
-  });
-};
+  })
+}
 
 module.exports = {
   COMMAND_TYPE_CUSTOM,
