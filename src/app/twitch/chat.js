@@ -112,7 +112,7 @@ const onJoin = async (channel, username, self) => {
   // @TODO send event to Chat log?
 };
 
-const triggerSelfEvents = () => { };
+const triggerSelfEvents = () => {};
 
 const onMessage = async (channel, state, message, self) => {
   try {

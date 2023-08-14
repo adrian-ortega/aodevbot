@@ -45,8 +45,7 @@ exports.getAuthTokenFromCode = async (
       },
     );
 
-    // @TODO finish this implementation 
-
+    // @TODO finish this implementation
   } catch (err) {
     //
   }

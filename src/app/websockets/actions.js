@@ -3,7 +3,7 @@ const { isObject } = require("../support");
 const actions = [];
 const ACTION_STUB = {
   id: null,
-  handler: () => { },
+  handler: () => {},
   args: [],
 };
 
@@ -13,7 +13,7 @@ const addAction = (action) => {
   actions.push({ ...ACTION_STUB, ...action });
 };
 
-const registerActions = (wss) => { };
+const registerActions = (wss) => {};
 
 // const fireActions = () => {};
 
