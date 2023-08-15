@@ -4,19 +4,16 @@ const log = require("../log");
 const logPrefix = "Twitch Auth";
 const { isEmpty } = require("../support");
 
-const clientOptions = {
-  headers: { "Content-Type": "application/x-www-form-urlencoded" },
-  auth: [config.SPOTIFY_CLIENT_ID, config.SPOTIFY_CLIENT_SECRET],
-};
-
 const getClientOptions = () => {
   return {
     headers: {
-      Authorization: `Basic ${Buffer.from(`${config.SPOTIFY_CLIENT_ID}:${config.SPOTIFY_CLIENT_SECRET}`).toString('base64')}`,
-      "Content-Type": "application/x-www-form-urlencoded"
-    }
-  }
-}
+      Authorization: `Basic ${Buffer.from(
+        `${config.SPOTIFY_CLIENT_ID}:${config.SPOTIFY_CLIENT_SECRET}`,
+      ).toString("base64")}`,
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+  };
+};
 
 exports.refreshAccessToken = async (refresh_token) => {
   try {
@@ -36,27 +33,40 @@ exports.refreshAccessToken = async (refresh_token) => {
   return null;
 };
 
-exports.getAuthTokenFromCode = async (
-  code = null,
-  state = "",
-  redirect_uri = "",
-) => {
+exports.getAuthTokenFromCode = async (code = null, redirect_uri = "") => {
   try {
     if (isEmpty(code) || isEmpty(redirect_uri)) {
       throw new Error("Missing params");
     }
     const requestOptions = {
-      grant_type: 'authorization_code',
+      grant_type: "authorization_code",
       code,
-      redirect_uri
-    }
-    const { data } = await client.post("https://accounts.spotify.com/api/token", requestOptions, getClientOptions());
+      redirect_uri,
+    };
+    const { data } = await client.post(
+      "https://accounts.spotify.com/api/token",
+      requestOptions,
+      getClientOptions(),
+    );
     return data;
   } catch (err) {
-    console.log(err)
+    const { response } = err;
+
+    // Missing code for access_token
+    if (response && response.status === 400) {
+      return false;
+    }
+
+    log.error(
+      "getAuthTokenFromCode",
+      {
+        message: err.message,
+      },
+      logPrefix,
+    );
   }
 
-  return null
+  return null;
 };
 
 exports.getAuthURL = (redirect_uri) => {

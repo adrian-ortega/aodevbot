@@ -36,9 +36,9 @@ exports.authConfirm = async (req, res) => {
     return accessTokenResponse === false
       ? res.redirect("/api/twitch/authenticate")
       : res.status(400).send({
-        message: "Invalid Access Token",
-        authenticated: false,
-      });
+          message: "Invalid Access Token",
+          authenticated: false,
+        });
   }
 
   const { access_token, refresh_token, expires_in, scope } =
