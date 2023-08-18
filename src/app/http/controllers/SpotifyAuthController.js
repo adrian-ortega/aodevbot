@@ -15,7 +15,7 @@ exports.authenticate = (req, res) => {
 
 exports.authConfirm = async (req, res) => {
   const Spotify = require("../../spotify");
-  const { code, state } = req.query;
+  const { code } = req.query;
 
   // @TODO State parsing, we use this in case we want to pass
   //       the user ID that was registered, but this app isn't
@@ -37,9 +37,9 @@ exports.authConfirm = async (req, res) => {
     return accessTokenRespone === false
       ? res.redirect("/api/spotify/authenticate")
       : res.status(400).send({
-        message: "Invalid Access Token",
-        authenticated: false,
-      });
+          message: "Invalid Access Token",
+          authenticated: false,
+        });
   }
 
   const { access_token, expires_in, refresh_token, scope } = accessTokenRespone;

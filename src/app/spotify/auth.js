@@ -95,6 +95,7 @@ exports.getAuthURL = (redirect_uri) => {
     redirect_uri,
     state: "",
     scope: scopes.join(" "),
+    show_dialog: true,
   };
   Object.entries(params).forEach(([key, value]) => {
     url.searchParams.append(key, value);

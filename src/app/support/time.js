@@ -1,9 +1,9 @@
 const { plural } = require("./strings");
 const { isString } = require("./index");
 
-exports.ONE_SECOND = 1000;
-exports.ONE_MINUTE = 60 * 1000;
-exports.FIVE_MINUTES = 5 * 60 * 1000;
+const ONE_SECOND = 1000;
+const ONE_MINUTE = 60 * 1000;
+const FIVE_MINUTES = 5 * 60 * 1000;
 
 const getTimeDifferenceInMilliseconds = (a, b) => {
   if (!b || b === "now") b = new Date();
@@ -61,6 +61,9 @@ const getTimeDifferenceForHumans = (a, b = null) => {
 };
 
 module.exports = {
+  ONE_MINUTE,
+  ONE_SECOND,
+  FIVE_MINUTES,
   getTimeDifferenceForHumans,
   getTimeDifferenceInMilliseconds,
   getTimeDifferenceInSeconds,

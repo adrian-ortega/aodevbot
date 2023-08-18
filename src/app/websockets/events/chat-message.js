@@ -10,6 +10,7 @@ const {
 } = require("../../twitch/chat/state-keys");
 const twitchCommands = require("../../twitch/chat/commands");
 const twitchEvents = require("../../twitch/chat/events");
+const { makeId } = require("../../support/uuid");
 
 const createTmiChatState = (Chatter, Broadcaster) => {
   return {
@@ -22,7 +23,7 @@ const createTmiChatState = (Chatter, Broadcaster) => {
   };
 };
 
-const createTmiClientSpoof = (ws, state) => {
+const createTmiClientSpoof = function (ws, state) {
   // This doesn't work. when creating the the original spoof, the
   // user stays as the original request for the bot.
   //
@@ -32,6 +33,8 @@ const createTmiClientSpoof = (ws, state) => {
   //          The returned message should be by the BOT ACCOUNT,
   //          this only happens for admin debug chat.
   //            ↳ Dragoy_Zzz: 🤖 It is Friday 4:03 PM for aodev.
+
+  const eventCallbackCache = {};
 
   return {
     say: async (channel, message) => {
@@ -54,12 +57,30 @@ const createTmiClientSpoof = (ws, state) => {
       }
     },
 
-    on: (...args) => {
-      console.log("tmiClientSpoof.on", { args });
+    on: (event, callback) => {
+      const eventCallbackId = makeId(eventCallbackCache);
+      switch (event) {
+        case "message":
+          eventCallbackCache[eventCallbackId] = (ogMessage) => {
+            const data = JSON.parse(ogMessage);
+            if (!data.event) return;
+
+            console.log(data);
+            getBroadcaster().then((broadcaster) => {
+              callback(broadcaster.username, {}, data.payload.message);
+            });
+          };
+          ws.on("message", eventCallbackCache[eventCallbackId].bind(this));
+      }
     },
 
-    off: (...args) => {
-      console.log("tmiClientSpoof.off", { args });
+    off: (event, callback) => {
+      for (const cacheKey in eventCallbackCache) {
+        const cachedCallback = eventCallbackCache[cacheKey].bind(this);
+        if (cachedCallback === callback) {
+          ws.removeListener(event, cachedCallback.bind(this));
+        }
+      }
     },
   };
 };

@@ -1,5 +1,6 @@
 const { isNumeric } = require("../support");
-const { Chatters } = require("../models");
+const { Chatters, Tokens, Sequelize } = require("../models");
+const moment = require("moment/moment");
 
 const PRIMARY_BROADCASTER = 1;
 const SECONDARY_BROADCASTER = 2;
@@ -8,6 +9,25 @@ const getBroadcaster = async () => {
   const Broadcaster = await Chatters.findOne({
     where: {
       broadcaster: PRIMARY_BROADCASTER,
+    },
+  });
+  if (!Broadcaster) {
+    throw new Error("Primary broadcaster does not exist");
+  }
+  return Broadcaster;
+};
+
+const getBroadcasterWithTokens = async () => {
+  const Broadcaster = await Chatters.findOne({
+    where: { broadcaster: PRIMARY_BROADCASTER },
+    include: {
+      model: Tokens,
+      as: "tokens",
+      where: {
+        expires: {
+          [Sequelize.Op.gt]: moment().toDate(),
+        },
+      },
     },
   });
   if (!Broadcaster) {
@@ -42,6 +62,7 @@ module.exports = {
   PRIMARY_BROADCASTER,
   SECONDARY_BROADCASTER,
   getBroadcaster,
+  getBroadcasterWithTokens,
   getBroadcasterTwitchId,
   isBroadcaster,
 

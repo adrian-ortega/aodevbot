@@ -1,3 +1,16 @@
+const EMOJI_NUMBERS = [
+  "0️⃣",
+  "1️⃣",
+  "2️⃣",
+  "3️⃣",
+  "4️⃣",
+  "5️⃣",
+  "6️⃣",
+  "7️⃣",
+  "8️⃣",
+  "9️⃣",
+];
+
 const PLURAL_MAP = {
   "(quiz)$": "$1zes",
   "^(ox)$": "$1en",
@@ -108,7 +121,12 @@ const pregMatchAll = (regex, str) => {
   return matches.reduce(reducer, [])[1];
 };
 
+const stringFormat = (str, context) =>
+  str.replace(/\{(\d+)\}/g, (m, n) => context[n] || m);
+
 module.exports = {
+  EMOJI_NUMBERS,
   pregMatchAll,
   plural,
+  stringFormat,
 };
