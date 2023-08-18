@@ -1,3 +1,5 @@
+const log = require("../log");
+const logPrefix = "Spotify Users";
 const client = require("./client");
 
 exports.getCurrentUser = async () => {
@@ -5,7 +7,7 @@ exports.getCurrentUser = async () => {
     const { data } = await client.get("/me");
     return data;
   } catch (err) {
-    console.log(err);
+    log.error("getCurrentUser", { message: err.message }, logPrefix);
   }
 
   return null;

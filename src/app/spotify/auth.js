@@ -1,15 +1,16 @@
 const client = require("axios");
-const config = require("../../config");
 const log = require("../log");
-const logPrefix = "Twitch Auth";
+const logPrefix = "Spotify Auth";
 const { isEmpty } = require("../support");
+const { SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET } = require("../../config");
 
 const getClientOptions = () => {
+  const token = Buffer.from(
+    `${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`,
+  ).toString("base64");
   return {
     headers: {
-      Authorization: `Basic ${Buffer.from(
-        `${config.SPOTIFY_CLIENT_ID}:${config.SPOTIFY_CLIENT_SECRET}`,
-      ).toString("base64")}`,
+      Authorization: `Basic ${token}`,
       "Content-Type": "application/x-www-form-urlencoded",
     },
   };
@@ -17,7 +18,7 @@ const getClientOptions = () => {
 
 exports.refreshAccessToken = async (refresh_token) => {
   try {
-    const response = await client.post(
+    const { data } = await client.post(
       "https://accounts.spotify.com/api/token",
       {
         grant_type: "refresh_token",
@@ -25,7 +26,7 @@ exports.refreshAccessToken = async (refresh_token) => {
       },
       getClientOptions(),
     );
-    return await response.json();
+    return data;
   } catch (err) {
     log.error("Refresh token failed", { message: err.message }, logPrefix);
   }
@@ -74,7 +75,7 @@ exports.getAuthURL = (redirect_uri) => {
   //       different types to change the scopes required
   //       to interact with this API
 
-  const client_id = config.SPOTIFY_CLIENT_ID;
+  const client_id = SPOTIFY_CLIENT_ID;
   const scopes = [
     // This is sthe only required spotify scope for everyone else,
     "user-read-email",
