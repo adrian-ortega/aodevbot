@@ -3,6 +3,7 @@ const controller = require("../controllers/ChattersController");
 
 router.get("/", controller.list);
 router.post("/", controller.create);
+router.get("/sync", controller.sync);
 router.get("/:id", controller.detail);
 router.patch("/:id", controller.update);
 router.delete("/:id", controller.destroy);
