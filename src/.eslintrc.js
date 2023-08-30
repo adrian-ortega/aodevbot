@@ -1,5 +1,9 @@
 module.exports = {
   extends: [
-    'semistandard'
-  ]
+    'semistandard',
+    'prettier'
+  ],
+  rules: {
+    camelcase: 'off'
+  }
 };

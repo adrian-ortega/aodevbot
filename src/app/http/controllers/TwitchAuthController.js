@@ -1,19 +1,19 @@
-const config = require('../../../config');
-const { reconnectChatClient } = require('../../twitch/chat');
-const moment = require('moment');
+const config = require("../../../config");
+const { reconnectChatClient } = require("../../twitch/chat");
+const moment = require("moment");
 const redirect_uri = `http://${config.HOST}:${config.PORT}/api/twitch/authenticate/confirm`;
 
 exports.authenticate = (req, res) => {
-  const twitch = require('../../twitch');
+  const twitch = require("../../twitch");
   const { type } = req.query;
   res.send({
-    data: twitch.getAuthURL(redirect_uri, parseInt(type, 10))
+    data: twitch.getAuthURL(redirect_uri, parseInt(type, 10)),
   });
 };
 
 exports.authConfirm = async (req, res) => {
-  const Twitch = require('../../twitch');
-  const { Chatters } = require('../../models');
+  const Twitch = require("../../twitch");
+  const { Chatters } = require("../../models");
   let { code, state } = req.query;
   try {
     state = JSON.parse(state);
@@ -23,30 +23,34 @@ exports.authConfirm = async (req, res) => {
 
   if (!code || !state) {
     return res.status(400).send({
-      message: 'Missing data',
-      authenticated: false
+      message: "Missing data",
+      authenticated: false,
     });
   }
 
-  const accessTokenResponse = await Twitch.getAuthTokenFromCode(code, redirect_uri);
+  const accessTokenResponse = await Twitch.getAuthTokenFromCode(
+    code,
+    redirect_uri,
+  );
   if (!accessTokenResponse) {
     return accessTokenResponse === false
-      ? res.redirect('/api/twitch/authenticate')
+      ? res.redirect("/api/twitch/authenticate")
       : res.status(400).send({
-        message: "Invalid Access Token",
-        authenticated: false
-      });
+          message: "Invalid Access Token",
+          authenticated: false,
+        });
   }
 
-  const { access_token, refresh_token, expires_in, scope } = accessTokenResponse;
-  const expires = moment().add(expires_in, 'seconds');
+  const { access_token, refresh_token, expires_in, scope } =
+    accessTokenResponse;
+  const expires = moment().add(expires_in, "seconds");
   await Twitch.setAccessToken(
     { access_token, refresh_token },
     expires,
-    scope.join(' ')
+    scope.join(" "),
   );
 
-  // We need to override the current token in order to pull the data with the 
+  // We need to override the current token in order to pull the data with the
   // token provided by Twitch. Otherwise, the user returned will be that of the
   // broadcaster, if saved.
   //
@@ -57,15 +61,15 @@ exports.authConfirm = async (req, res) => {
   if (!twitchUserData) {
     return res.status(401).send({
       message: "Cannot load Twitch user",
-      authenticated: false
-    })
+      authenticated: false,
+    });
   }
 
-  let broadcaster = state.t ? state.t : 0;
+  const broadcaster = state.t ? state.t : 0;
   const chatterResults = await Chatters.findOrCreate({
     where: {
       twitch_id: twitchUserData.id,
-      username: twitchUserData.login
+      username: twitchUserData.login,
     },
     defaults: {
       twitch_id: twitchUserData.id,
@@ -74,8 +78,8 @@ exports.authConfirm = async (req, res) => {
       profile_image_url: twitchUserData.profile_image_url,
       mod: true,
       subscriber: true,
-      broadcaster
-    }
+      broadcaster,
+    },
   });
   const Chatter = chatterResults.length > 0 ? chatterResults.shift() : null;
   if (Chatter) {
@@ -86,6 +90,6 @@ exports.authConfirm = async (req, res) => {
 
   return res.send({
     message: `User ${Chatter.twitch_id} Authenticated`,
-    authenticated: true
+    authenticated: true,
   });
-}
+};

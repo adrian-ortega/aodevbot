@@ -1,5 +1,5 @@
-const { loadFile, saveFile } = require('./files');
-const { isObject, objectHasProp, isArray } = require('./index');
+const { loadFile, saveFile } = require("./files");
+const { isObject, objectHasProp, isArray } = require("./index");
 
 class JSONFileStorage {
   constructor(filepath, data, autoload = false) {
@@ -17,7 +17,7 @@ class JSONFileStorage {
 
   has(id) {
     this.refresh();
-    return objectHasProp(this.data, id)
+    return objectHasProp(this.data, id);
   }
 
   get(id, defaultValue = null) {
@@ -34,7 +34,7 @@ class JSONFileStorage {
   }
 
   put(id, value) {
-    const sanitize = (a) => isObject(a) ? { ...a } : isArray(a) ? [...a] : a;
+    const sanitize = (a) => (isObject(a) ? { ...a } : isArray(a) ? [...a] : a);
 
     // @TODO implement a way to "put" multiple values
     //       when the ID variable is an object with keys itself
@@ -62,7 +62,7 @@ class JSONFileStorage {
 
   save(data = undefined) {
     if (!data) data = this.data;
-    return this.saveFile(data)
+    return this.saveFile(data);
   }
 
   saveFile(data) {
@@ -74,8 +74,8 @@ class JSONFileStorage {
       this.filepath,
       defaultValue,
       this.fileReadParser.bind(this),
-      this.fileWriteParser.bind(this)
-    )
+      this.fileWriteParser.bind(this),
+    );
   }
 
   fileWriteParser(value) {
@@ -89,4 +89,4 @@ class JSONFileStorage {
 
 module.exports = (filepath, data, autoload = false) => {
   return new JSONFileStorage(filepath, data, autoload);
-}
+};

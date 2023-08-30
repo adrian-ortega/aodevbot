@@ -1,1 +1,1 @@
-module.exports = (cmdName, cmdReply) => { }
+module.exports = (cmdName, cmdReply) => {};

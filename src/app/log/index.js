@@ -1,5 +1,5 @@
-const moment = require('moment-timezone');
-const { DEFAULT_TIMEZONE } = require('../../config');
+const moment = require("moment-timezone");
+const { DEFAULT_TIMEZONE } = require("../../config");
 const LOGGER_FATAL = 0;
 const LOGGER_ERROR = 1;
 const LOGGER_WARN = 2;
@@ -17,33 +17,36 @@ const LEVELS = {
   success: LOGGER_SUCCESS,
 };
 const LEVEL_NAMES = {
-  [LOGGER_FATAL]: 'Fatal',
-  [LOGGER_ERROR]: 'Error',
-  [LOGGER_WARN]: 'Warning',
-  [LOGGER_INFO]: 'Info',
-  [LOGGER_DEBUG]: 'Debug',
-  [LOGGER_TRACE]: 'Trace',
-  [LOGGER_SUCCESS]: 'Success'
+  [LOGGER_FATAL]: "Fatal",
+  [LOGGER_ERROR]: "Error",
+  [LOGGER_WARN]: "Warning",
+  [LOGGER_INFO]: "Info",
+  [LOGGER_DEBUG]: "Debug",
+  [LOGGER_TRACE]: "Trace",
+  [LOGGER_SUCCESS]: "Success",
 };
 
 const handlers = [
-  require('./handler')
-]
+  require("./handler"),
+  require("./websocker-handler")
+];
 
 const log = ({ message, context = undefined, type = LOGGER_INFO, prefix }) => {
-  const timestamp = `[${moment().tz(DEFAULT_TIMEZONE).format('h:mm A')}]`;
+  const timestamp = `[${moment().tz(DEFAULT_TIMEZONE).format("h:mm A")}]`;
   for (let i = 0; i < handlers.length; i++) {
-    handlers[i].apply(this, [{
-      message,
-      context,
-      type,
-      levels: LEVELS,
-      levelNames: LEVEL_NAMES,
-      timestamp,
-      prefix
-    }]);
+    handlers[i].apply(this, [
+      {
+        message,
+        context,
+        type,
+        levels: LEVELS,
+        levelNames: LEVEL_NAMES,
+        timestamp,
+        prefix,
+      },
+    ]);
   }
-}
+};
 
 const fatal = (message, context, prefix) => {
   log({ message, context, type: LEVELS.fatal, prefix });
@@ -66,7 +69,7 @@ const trace = (message, context, prefix) => {
 
 const success = (message, context, prefix) => {
   log({ message, context, type: LEVELS.success, prefix });
-}
+};
 
 module.exports = {
   fatal,
@@ -77,5 +80,5 @@ module.exports = {
   trace,
   success,
   LEVELS,
-  LEVEL_NAMES
-}
+  LEVEL_NAMES,
+};

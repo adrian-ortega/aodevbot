@@ -25,5 +25,9 @@ module.exports = {
   // Twitch
   TWITCH_USERNAME: process.env.TWITCH_USERNAME || 'aodev',
   TWITCH_CLIENT_ID: process.env.TWITCH_CLIENT_ID || '',
-  TWITCH_CLIENT_SECRET: process.env.TWITCH_CLIENT_SECRET || ''
+  TWITCH_CLIENT_SECRET: process.env.TWITCH_CLIENT_SECRET || '',
+
+  // Spotify
+  SPOTIFY_CLIENT_ID: process.env.SPOTIFY_CLIENT_ID || null,
+  SPOTIFY_CLIENT_SECRET: process.env.SPOTIFY_CLIENT_SECRET || null
 };

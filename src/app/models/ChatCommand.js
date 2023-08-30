@@ -2,7 +2,7 @@ const { isString, isObject, isArray } = require("../support");
 
 const ChatCommandModel = (sequelize, Sequelize) => {
   const { TEXT, INTEGER, STRING, BOOLEAN } = Sequelize;
-  const ChatCommand = sequelize.define('chat-command', {
+  const ChatCommand = sequelize.define("chat-command", {
     id: { type: INTEGER, primaryKey: true, autoIncrement: true },
     type: { type: INTEGER },
     enabled: { type: BOOLEAN },
@@ -12,15 +12,15 @@ const ChatCommandModel = (sequelize, Sequelize) => {
     options: {
       type: TEXT,
       get() {
-        const value = this.getDataValue('options');
+        const value = this.getDataValue("options");
         try {
           const data = JSON.parse(value);
           return data;
         } catch (err) {
           return value;
         }
-      }
-    }
+      },
+    },
   });
 
   ChatCommand.beforeValidate(async (command, options) => {
