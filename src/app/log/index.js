@@ -26,7 +26,10 @@ const LEVEL_NAMES = {
   [LOGGER_SUCCESS]: "Success",
 };
 
-const handlers = [require("./handler")];
+const handlers = [
+  require("./handler"),
+  require("./websocker-handler")
+];
 
 const log = ({ message, context = undefined, type = LOGGER_INFO, prefix }) => {
   const timestamp = `[${moment().tz(DEFAULT_TIMEZONE).format("h:mm A")}]`;
