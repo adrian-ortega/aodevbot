@@ -11,13 +11,13 @@ exports.handle = async (message, state, channel, { client }, resolve) => {
       twitch_id,
     },
     attributes: [
-      [Sequelize.fn("COUNT", Sequelize.col("Chats.id")), "chatCount"],
+      [Sequelize.fn("COUNT", Sequelize.col("chats.id")), "chatCount"],
     ],
     include: {
       model: Chat,
       attributes: [],
     },
-    group: ["Chatter.id"],
+    group: ["chatter.id"],
   });
 
   if (chatterResults.length > 0) {
