@@ -7,7 +7,7 @@ const {
   objectHasProp,
   objectHasMethod,
 } = require("../../support");
-const { USER_MESSAGE_PARAMS } = require("./state-keys");
+const { USER_MESSAGE_PARAMS, USER_MESSAGE_COMMAND } = require("./state-keys");
 
 let data = [];
 
@@ -96,6 +96,7 @@ exports.maybeRun = (channel, state, message, chatClient) => {
   };
 
   state[USER_MESSAGE_PARAMS] = getMessageParams(message, cmd);
+  state[USER_MESSAGE_COMMAND] = getMatchedName(message, cmd)
 
   cmd.handle(message, state, channel, chatClient, cmdCallback);
   return true;
