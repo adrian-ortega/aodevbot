@@ -15,6 +15,8 @@ const USER_TYPE = "user-type";
 const USER_USERNAME = "username";
 const USER_MESSAGE_PARAMS = "user-message-params";
 
+const USER_MESSAGE_COMMAND = "user-message-command"
+
 module.exports = {
   USER_BADGE_INFO,
   USER_BADGES,
@@ -32,4 +34,5 @@ module.exports = {
   USER_TYPE,
   USER_USERNAME,
   USER_MESSAGE_PARAMS,
+  USER_MESSAGE_COMMAND,
 };
