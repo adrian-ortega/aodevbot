@@ -14,6 +14,8 @@ const registeredCommands = [
   require("../../../spotify/chat/commands/SongRequestCommand"),
 
   // General Commands
+  require("./CheersCommand"),
+  require("./HugCommand"),
   require("./FollowageCommand"),
   require("./LurkCommand"),
   require("./UnlurkCommand"),

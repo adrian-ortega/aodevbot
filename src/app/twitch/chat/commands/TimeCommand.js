@@ -15,7 +15,7 @@ const getDayName = (day) => {
 exports.name = "time";
 exports.description = "Shows the current time for the broadcaster.";
 exports.handle = (message, state, channel, { client }, resolve) => {
-  const wss = require('../../../websockets').getWebSocketServer()
+  const broadcast = require('../../../websockets').broadcastToClients
   const time = new Date();
   const hours = time.getHours();
   const minutes = time.getMinutes();
@@ -25,13 +25,11 @@ exports.handle = (message, state, channel, { client }, resolve) => {
   const h = hours % 12 ? hours % 12 : 12;
   const m = minutes < 10 ? `0${minutes}` : minutes;
 
-  wss.clients.forEach((ws) => {
-    ws.send(JSON.stringify({
-      event: 'time-command',
-      payload: {
-        time, hours, minutes, day, h, m, ampm, channel
-      }
-    }))
+  broadcast({
+    event: 'time-command',
+    payload: {
+      time, hours, minutes, day, h, m, ampm, channel
+    }
   })
 
   const reply = `It is ${day} ${h}:${m} ${ampm} for ${channel}.`

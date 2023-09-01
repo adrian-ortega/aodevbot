@@ -1,3 +1,24 @@
+const { KeyValue } = require('../../../models');
+const { randomFromArray } = require('../../../support');
+const { stringFormat } = require('../../../support/strings');
+const { botMessageReply } = require('../commands');
+const { USER_ID, USER_MESSAGE_COMMAND, USER_DISPLAY_NAME } = require('../state-keys');
+
+const getUserStats = async (twitch_id) => {
+  const item_key = `cmd_cheers_count_${twitch_id}`
+  const [model] = await KeyValue.findOrCreate({
+    where: {
+      item_key
+    },
+    defaults: {
+      item_key,
+      item_value: 0
+    }
+  });
+
+  return model;
+}
+
 const CHEER_REPLIES = [
   {
     names: ["cheers", "prohst", "sante", "prohst"],
@@ -26,12 +47,13 @@ const CHEER_REPLIES = [
 
 exports.name = () =>
   CHEER_REPLIES.map((r) => r.names).reduce(
-    (acc, a) => [...acc, ...a.names],
+    (acc, names) => [...acc, ...names],
     [],
   );
 
 exports.description =
   "Will reply CHEERS in the correct language to the user and keep count. ";
+
 exports.handle = async (
   message,
   state,
@@ -39,10 +61,11 @@ exports.handle = async (
   { client, commands },
   resolve,
 ) => {
-  // @TODO pull count from db, this will be how many times
-  // the user has cheered us during this current stream
-  // @TODO find the reply based on the name used (which language, !cheers vs !kanpai)
-  // @TODO get a random message based on which language bank was used.
-  // then format it to use the count, and name of the user using a
-  // string format function.
+  const count = await getUserStats(state[USER_ID]);
+  const repo = CHEER_REPLIES.find(o => o.names.includes(state[USER_MESSAGE_COMMAND]))
+  const reply = stringFormat(randomFromArray(repo.replies), [
+    state[USER_DISPLAY_NAME],
+    count.item_value
+  ])
+  client.say(channel, botMessageReply(reply)).then(() => resolve(reply))
 };
