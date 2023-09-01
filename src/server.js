@@ -7,6 +7,8 @@ const express = require('express');
 const router = require('./app/router');
 const app = express();
 
+console.clear();
+
 app.use(express.static(path.resolve('./public')));
 checkOrCreateDirectory(path.resolve('./storage'));
 
@@ -26,10 +28,8 @@ db.sequelize.sync({
 
 const twitch = require('./app/twitch');
 const server = app.listen(PORT, () => {
-  console.clear();
-  console.log();
   log.debug('AODEVBot is up and running', null, 'Server');
-  log.info(`http://${HOST}:${PORT}\n`, null, 'Server');
+  log.info(`http://${HOST}:${PORT}`, null, 'Server');
 });
 
 twitch.createChatClient(
