@@ -40,6 +40,19 @@ const wait = (time) => new Promise((resolve) => setTimeout(resolve, time));
 const randomFromArray = (array) =>
   array[Math.floor(Math.random() * array.length)];
 
+const shuffleArray = (array, size) => {
+  let index = -1;
+  const length = array.length;
+  const copy = [...array];
+  size = size === undefined ? length : size;
+  while (++index < size) {
+    let rand = Math.floor(Math.random() * index);
+    [copy[index], copy[rand]] = [copy[rand], copy[index]];
+  }
+  copy.length = size;
+  return copy;
+};
+
 module.exports = {
   isEmpty,
   isString,
@@ -54,4 +67,5 @@ module.exports = {
   wait,
 
   randomFromArray,
+  shuffleArray,
 };

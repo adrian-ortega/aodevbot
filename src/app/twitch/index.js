@@ -4,6 +4,7 @@ const tokens = require("./tokens");
 const stream = require("./stream.js");
 const users = require("./users");
 const events = require("./events");
+const leaderboard = require('./leaderboard');
 
 module.exports = {
   ...auth,
@@ -12,4 +13,5 @@ module.exports = {
   ...stream,
   ...users,
   ...events,
+  ...leaderboard,
 };

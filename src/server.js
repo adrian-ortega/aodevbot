@@ -35,3 +35,5 @@ const server = app.listen(PORT, () => {
 twitch.createChatClient(
   createWebSocketServer(server)
 );
+
+require('./app/stats')

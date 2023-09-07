@@ -60,6 +60,21 @@ const getTimeDifferenceForHumans = (a, b = null) => {
   return `${y} ${plural("year", y)}`;
 };
 
+const requestAnimationFrame = (function () {
+  let lastTimestamp = Date.now();
+  let now;
+  let timeout;
+  const simulationTimeStep = 1000 / 60;
+  return function (callback) {
+    now = Date.now();
+    timeout = Math.max(0, simulationTimeStep, (now - lastTimestamp) * -1)
+    lastTimestamp = now + timeout;
+    return setTimeout(function () {
+      callback(now + timeout)
+    })
+  }
+})()
+
 module.exports = {
   ONE_MINUTE,
   ONE_SECOND,
@@ -73,4 +88,5 @@ module.exports = {
   getTimeDifferenceInWeeks,
   getTimeDifferenceInMonths,
   getTimeDifferenceInYears,
+  requestAnimationFrame,
 };
