@@ -32,7 +32,8 @@ const handlers = [
 ];
 
 const log = ({ message, context = undefined, type = LOGGER_INFO, prefix }) => {
-  const timestamp = `[${moment().tz(DEFAULT_TIMEZONE).format("h:mm A")}]`;
+  const timestampRaw = moment().tz(DEFAULT_TIMEZONE);
+  const timestamp = `[${timestampRaw.format("h:mm:ss A")}]`;
   for (let i = 0; i < handlers.length; i++) {
     handlers[i].apply(this, [
       {
@@ -42,6 +43,7 @@ const log = ({ message, context = undefined, type = LOGGER_INFO, prefix }) => {
         levels: LEVELS,
         levelNames: LEVEL_NAMES,
         timestamp,
+        timestampRaw,
         prefix,
       },
     ]);
