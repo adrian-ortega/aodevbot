@@ -69,13 +69,7 @@ const logMessage = async (message_content, state) => {
       });
     }
   } catch (err) {
-    log.error(
-      "logMessage",
-      {
-        message: err.message,
-      },
-      logPrefix,
-    );
+    log.error("logMessage", { message: err.message, }, logPrefix);
   }
 };
 
@@ -112,7 +106,7 @@ const onJoin = async (channel, username, self) => {
   // @TODO send event to Chat log?
 };
 
-const triggerSelfEvents = () => {};
+const triggerSelfEvents = () => { };
 
 const onMessage = async (channel, state, message, self) => {
   try {
@@ -134,14 +128,7 @@ const onMessage = async (channel, state, message, self) => {
       events.maybeRun(channel, state, message, chatClient);
     }
   } catch (err) {
-    log.error(
-      "onMessage",
-      {
-        message: err.message,
-        err,
-      },
-      logPrefix,
-    );
+    log.error("onMessage", { message: err.message, err, }, logPrefix);
   }
 };
 

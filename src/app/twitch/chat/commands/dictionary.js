@@ -23,6 +23,7 @@ const registeredCommands = [
   require("./TimeCommand"),
   require("./PointsCommand"),
   require("./RedeemCommand"),
+  require("./ShoutoutCommand"),
   require("./CommandsCommand"), // Must be last in the list
 ];
 
