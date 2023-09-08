@@ -1,5 +1,3 @@
-const log = require("../log");
-const logPrefix = "WS";
 const queryString = require("query-string");
 const WebSocket = require("ws");
 const { fireActions } = require("./actions");
@@ -89,12 +87,5 @@ exports.createWebSocketServer = (expressServer) => {
   registerActions();
   registerEventListeners();
 
-  log.debug(
-    "WebSocket Created",
-    {
-      url: "/websockets",
-    },
-    logPrefix,
-  );
   return webSocketServer;
 };

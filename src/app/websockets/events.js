@@ -13,7 +13,7 @@ const createEventListener = (name) => {
 const eventListenerExists = (name) => events.includes(name);
 const pushEventListener = (name, handler) => listeners[name].push(handler);
 
-const addEventListner = (name, handler) => {
+const addEventListener = (name, handler) => {
   if (!isFunction(handler)) {
     throw new Error("Event listener handler must be a function");
   }
@@ -47,11 +47,16 @@ const fireEventListeners = async (ws, event, payload, args) => {
 };
 
 const registerEventListeners = async () => {
-  addEventListner("chat-message", await require("./events/chat-message"));
+  addEventListener("chat-message", await require("./events/chat-message"));
+
+  const stats = require('./events/stats')
+  addEventListener('stats.next', stats.next);
+  addEventListener('stats.current', stats.current);
+  addEventListener('stats.stop', stats.stop)
 };
 
 module.exports = {
-  addEventListner,
+  addEventListener,
   fireEventListeners,
   registerEventListeners,
 };

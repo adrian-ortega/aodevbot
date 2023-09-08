@@ -7,7 +7,8 @@ exports.getCurrentUser = async () => {
     const { data } = await client.get("/me");
     return data;
   } catch (err) {
-    log.error("getCurrentUser", { message: err.message }, logPrefix);
+    const data = err.response && err.response.data ? err.response.data : {}
+    log.error("getCurrentUser", { message: err.message, data }, logPrefix);
   }
 
   return null;

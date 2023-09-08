@@ -45,75 +45,46 @@ const getSubscribers = async (broadcaster_id) => {
 }
 
 const getUserFollowers = async (
-  from_id,
   first = 100,
-  after = null,
-  is_broadcaster = false,
+  after = undefined,
+  user_id = undefined
 ) => {
   try {
-    let to_id = await getBroadcasterTwitchId();
-    if (from_id === to_id) {
-      to_id = null;
-    }
-
-    if (is_broadcaster) {
-      to_id = from_id;
-      from_id = null;
-    }
-    const { data } = await client.get("/helix/users/follows", {
-      params: { from_id, to_id, first, after: after || undefined },
+    let broadcaster_id = await getBroadcasterTwitchId();
+    const { data } = await client.get("/helix/channels/followers", {
+      params: { user_id: user_id || undefined, broadcaster_id, first, after },
     });
     return data;
   } catch (err) {
-    log.error('getUserFollowers', { message: err.message }, logPrefix);
+    const data = err.response && err.response.data ? err.response.data : {}
+    log.error('getUserFollowers', { message: err.message, data }, logPrefix);
   }
   return null;
 };
 
-const getFollowersTotal = async (to_id) => {
+const getFollowersTotal = async () => {
   try {
-    if (!to_id) {
-      to_id = await getBroadcasterTwitchId();
-    }
-    const { data: responseData } = await client.get("/helix/users/follows", {
-      params: { to_id, first: 1 },
-    });
-    return responseData.total;
+    const response = await getUserFollowers(1);
+    return response.total;
   } catch (err) {
-    log.error('getFollowersTotal', { message: err.message }, logPrefix);
+    const data = err.response && err.response.data ? err.response.data : {}
+    log.error('getFollowersTotal', { message: err.message, data }, logPrefix);
   }
   return 0;
 }
 
-const getFollowers = async (twitch_id = null) => {
+const getFollowers = async () => {
   try {
-    if (!twitch_id) {
-      const Broadcaster = await getBroadcaster();
-      twitch_id = Broadcaster.twitch_id;
-    }
-
-    const is_broadcaster = await isBroadcaster(twitch_id);
-
-    let response = await getUserFollowers(twitch_id, 100, null, is_broadcaster);
-    let data = response.data;
-    while (response.pagination.cursor) {
-      response = await getUserFollowers(
-        twitch_id,
-        100,
-        response.pagination.cursor,
-        is_broadcaster,
-      );
+    let response = await getUserFollowers(100);
+    let data = response ? response.data : [];
+    while (response && response.pagination && response.pagination.cursor) {
+      response = await getUserFollowers(100, response.pagination.cursor);
       data = [...data, ...response.data];
     }
     return data;
   } catch (err) {
-    log.error(
-      "getFollowers",
-      {
-        message: err.message,
-      },
-      logPrefix,
-    );
+    const data = err.response && err.response.data ? err.response.data : err
+    log.error("getFollowers", { message: err.message, data }, logPrefix);
   }
   return [];
 };
@@ -132,10 +103,11 @@ const getUser = async (id) => {
     const { data } = responseData;
     return data.length > 0 ? data[0] : null;
   } catch (err) {
+    const data = err.response && err.response.data ? err.response.data : {}
     log.error(
       "getUser",
       {
-        message: err.message,
+        message: err.message, data
       },
       logPrefix,
     );

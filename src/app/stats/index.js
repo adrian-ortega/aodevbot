@@ -3,8 +3,9 @@ const logPrefix = 'Stats'
 const { shuffleArray, isFunction } = require('../support')
 const { requestAnimationFrame, ONE_MINUTE } = require('../support/time');
 
-const DURATION_ON = ONE_MINUTE;
-const DURATION_OFF = ONE_MINUTE * 3;
+const DURATION_ON = ONE_MINUTE * 3;
+const DURATION_OFF = ONE_MINUTE * 2;
+const DURATION_PUSH = ONE_MINUTE / 4;
 const DEFAULT_GROUP = 'bits-leaders,default,followers'//,song-requests'
 
 let timeoutId;
@@ -19,6 +20,18 @@ const resetGroups = () => {
   groups = shuffleArray(DEFAULT_GROUP.split(',').map(s => s.trim()))
 }
 
+const broadcastCurrent = () => {
+  const { broadcastToClients } = require('../websockets');
+  broadcastToClients({
+    event: 'stats.current',
+    payload: {
+      currentGroup: nextGroup,
+      nextGroup: flip ? groups[0] : 'skip',
+      lastTimestamp,
+      duration
+    }
+  });
+}
 const handle = async (wss) => {
   try {
     nextGroup = groups.shift();
@@ -37,13 +50,23 @@ const handle = async (wss) => {
       message: e.message
     }, logPrefix)
   }
+
+  return null;
 }
 
 const loop = async (timestamp) => {
   timeoutId = requestAnimationFrame(loop);
   const { getWebSocketServer, broadcastToClients } = require('../websockets');
   const wss = getWebSocketServer()
-  if (fetching || wss.clients.size === 0 || ((timestamp - lastTimestamp) < duration)) {
+  if (fetching || wss.clients.size === 0) {
+    return;
+  }
+
+  if ((timestamp - lastTimestamp) % DURATION_PUSH === 0) {
+    broadcastCurrent();
+  }
+
+  if ((timestamp - lastTimestamp) < duration) {
     return;
   }
 
@@ -59,13 +82,34 @@ const loop = async (timestamp) => {
     });
   }
   fetching = false
+  broadcastCurrent()
+}
+
+const fastForward = async () => {
+  const { broadcastToClients } = require('../websockets');
+  fetching = true;
+  lastTimestamp += duration;
+  flip = true;
+  broadcastToClients({ event: 'stats', payload: await handle() })
+  broadcastCurrent()
+  fetching = false;
+}
+
+const getCurrent = async () => {
+  broadcastCurrent()
 }
 
 const init = () => {
   resetGroups();
+  broadcastCurrent();
   timeoutId = requestAnimationFrame((timestamp) => {
     lastTimestamp = timestamp;
     timeoutId = requestAnimationFrame(loop);
   });
 }
 init();
+
+module.exports = {
+  fastForward,
+  getCurrent
+}
