@@ -28,7 +28,8 @@ exports.refreshAccessToken = async (refresh_token) => {
     );
     return data;
   } catch (err) {
-    log.error("Refresh token failed", { message: err.message }, logPrefix);
+    const data = err.response ? err.response.data : {}
+    log.error("Refresh token failed", { message: err.message, data }, logPrefix);
   }
 
   return null;
@@ -58,13 +59,8 @@ exports.getAuthTokenFromCode = async (code = null, redirect_uri = "") => {
       return false;
     }
 
-    log.error(
-      "getAuthTokenFromCode",
-      {
-        message: err.message,
-      },
-      logPrefix,
-    );
+    const data = err.response ? err.response.data : {}
+    log.error("getAuthTokenFromCode", { message: err.message, data }, logPrefix);
   }
 
   return null;

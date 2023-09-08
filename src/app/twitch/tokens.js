@@ -30,13 +30,7 @@ exports.loadAccessToken = async () => {
         currentToken = results.shift();
       }
     } catch (err) {
-      log.error(
-        "Twitch.tokens.load",
-        {
-          message: err.message,
-        },
-        logPrefix,
-      );
+      log.error("Twitch.tokens.load", { message: err.message, }, logPrefix);
     }
   }
   return currentToken;

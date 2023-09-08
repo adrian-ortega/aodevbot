@@ -21,11 +21,8 @@ const requestAccessTokenInterceptor = async function (config) {
 };
 
 const requestInterceptorErrorHandler = function (err) {
-  log.error(
-    "requestAccessTokenInterceptor",
-    { message: err.message },
-    logPrefix,
-  );
+  const data = err.response ? err.response.data : {}
+  log.error("requestAccessTokenInterceptor", { message: err.message, data }, logPrefix);
   return Promise.reject(err);
 };
 
@@ -59,9 +56,10 @@ const responseRefreshTokenInterceptor = async function (err) {
       console.log(_err);
     }
   }
+  const data = err.response ? err.response.data : {}
   log.error(
     "responseRefreshTokenInterceptor",
-    { message: err.message },
+    { message: err.message, data },
     logPrefix,
   );
   return Promise.reject(err);

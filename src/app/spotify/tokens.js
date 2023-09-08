@@ -1,13 +1,23 @@
 const log = require("../log");
 const logPrefix = "Spotify Auth";
-const { getBroadcasterWithTokens } = require("../broadcaster");
+const { getBroadcasterWithTokens, getBroadcaster } = require("../broadcaster");
+const { Tokens } = require("../models");
 
 let currentToken;
 
 exports.loadAccessToken = async () => {
   try {
-    const broadcaster = await getBroadcasterWithTokens();
-    const token = broadcaster.tokens.find((a) => a.token_type === "spotify");
+    const broadcaster = await getBroadcaster();
+    const chatter_id = broadcaster.id
+    const results = await Tokens.findAll({
+      where: {
+        chatter_id,
+        token_type: 'spotify'
+      },
+      limit: 1,
+      order: [["expires", "DESC"]],
+    })
+    const token = results.shift();
     if (token) {
       currentToken = token;
     }
