@@ -63,13 +63,19 @@ exports.handle = async (
 
   const clips = await twitch.getUserClips(channelData.broadcaster_id, 1);
   const userData = await twitch.getUser(channelData.broadcaster_id);
+
   broadcastToClients({
     event: 'shoutout',
     payload: {
       channel: { ...channelData },
       user: { ...userData },
       reply,
-      clips,
+      clips: [...clips].map(clip => {
+        return {
+          ...clip,
+          src_url: clip.thumbnail_url.replace(/-preview.*/, '.mp4')
+        }
+      }),
     }
   })
 };

@@ -10,5 +10,5 @@ exports.getUserClips = async (broadcaster_id, first = 20) => {
     log.error('getUserClips', { message: err.message }, logPrefix);
   }
 
-  return null;
+  return [];
 }
