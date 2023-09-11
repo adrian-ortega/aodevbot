@@ -9,13 +9,13 @@ const events = require("./chat/events");
 const initEvents = require("./chat/events/dictionary");
 
 const { parseChatMessageHtml } = require("../websockets/helpers");
-const { Chat, Chatters } = require("../models");
+const { Chat, Chatters, Tokens } = require("../models");
 const { initPointsSync } = require("./chat/points");
-const { loadAccessToken } = require("./tokens");
 const { refreshAccessToken } = require("./auth");
 const { getStreamId, initStreamSync } = require("./stream");
 const { getUser } = require("./users");
 const { TWITCH_USERNAME } = require("../../config");
+const { getSecondaryBroadcasterOrNull, getBroadcasterOrNull } = require("../broadcaster");
 const {
   USER_ID,
   USER_IS_SUB,
@@ -28,11 +28,27 @@ const TMI_RECONNECT_RETRIES = 5;
 const TMI_SENT_STAMP = "tmi-sent-ts";
 
 const tmi = require("tmi.js");
+const { ONE_SECOND } = require("../support/time");
 let tmiConnected;
 let tmiConnectRetries = 0;
 
 let client;
 
+/**
+ * @returns {Chatters|null}
+ */
+const getChatBotAccount = async () => {
+  let Chatter = await getSecondaryBroadcasterOrNull();
+  if (!Chatter) {
+    Chatter = await getBroadcasterOrNull();
+  }
+  return Chatter;
+}
+
+/**
+ * @param {Object} state 
+ * @returns {Chatters}
+ */
 const getChatterFromChatState = async (state) => {
   const chatterResults = await Chatters.findOrCreate({
     where: {
@@ -60,6 +76,7 @@ const logMessage = async (message_content, state) => {
   const stream_id = await getStreamId();
   try {
     const Chatter = await getChatterFromChatState(state);
+    // @TODO use the chats relationship instead
     if (Chatter) {
       await Chat.create({
         twitch_id: state[USER_ID],
@@ -99,7 +116,8 @@ const onJoin = async (channel, username, self) => {
     await initStreamSync();
     await initPointsSync();
     tmiConnected = true;
-    return log.success("Connected", null, logPrefix);
+    const bChatter = await getChatBotAccount();
+    return log.success(`Connected as ${bChatter.display_name}/${bChatter.twitch_id}`, null, logPrefix);
   }
 
   log.debug(`Chatter ${chalk.cyan(username)} has joined.`, null, logPrefix);
@@ -138,11 +156,20 @@ const onMessage = async (channel, state, message, self) => {
 //       When we create the UI, we need to make a config
 //       page for this module.
 
+
 const getTwitchAuthIdentity = () => {
   return {
     username: TWITCH_USERNAME,
     password: async () => {
-      const token = await loadAccessToken();
+      const botAccount = await getChatBotAccount();
+      const token = await Tokens.findOne({
+        where: {
+          chatter_id: botAccount.id,
+          token_type: 'twitch'
+        },
+        limit: 1,
+        order: [["expires", "DESC"]],
+      })
       if (!token) {
         throw new Error("Twitch access_token not found");
       }
@@ -160,6 +187,7 @@ const createChatClient = async (wss) => {
       },
       identity,
       channels: [identity.username],
+      logger: log
     });
     client.on("join", onJoin);
     client.on("message", onMessage);
@@ -195,24 +223,20 @@ const createChatClient = async (wss) => {
     const msg = err.toString().toLowerCase();
     if (msg.includes("not found") || msg.includes("authentication failed")) {
       const retry = tmiConnectRetries++ < TMI_RECONNECT_RETRIES;
-      if (retry && (await refreshAccessToken())) {
-        log.warn(
-          "reconnecting...",
-          {
-            retry: tmiConnectRetries,
-          },
-          logPrefix,
-        );
-        return createChatClient();
+      const botAccount = await getChatBotAccount();
+      if (!botAccount) {
+        log.error('No Chat bot account found', null, logPrefix)
+      } else if (retry && (await refreshAccessToken(botAccount.id))) {
+        return new Promise((resolve) => {
+          const timeout = ONE_SECOND * (tmiConnectRetries * 2);
+          log.warn(`Reconnecting in ${timeout / ONE_SECOND} secs (Retry ${tmiConnectRetries})...`, null, logPrefix);
+          setTimeout(() => {
+            resolve(createChatClient());
+          }, timeout)
+        });
       }
     } else {
-      log.error(
-        "createChatClient",
-        {
-          error: err,
-        },
-        logPrefix,
-      );
+      log.error("createChatClient", { error: err }, logPrefix);
     }
   }
 };
@@ -228,6 +252,7 @@ const reconnectChatClient = async () => {
 const getChatClient = () => client;
 
 module.exports = {
+  getChatBotAccount,
   createChatClient,
   reconnectChatClient,
   addCommand,

@@ -46,9 +46,7 @@ const handle = async (wss) => {
     duration = DURATION_ON;
     return { data, type: nextGroup };
   } catch (e) {
-    log.error('handler error', {
-      message: e.message
-    }, logPrefix)
+    log.error('handler error', e, logPrefix)
   }
 
   return null;
@@ -100,6 +98,7 @@ const getCurrent = async () => {
 }
 
 const init = () => {
+  clearTimeout(timeoutId)
   resetGroups();
   broadcastCurrent();
   timeoutId = requestAnimationFrame((timestamp) => {

@@ -1,6 +1,7 @@
-const config = require("../../../config");
-const { reconnectChatClient } = require("../../twitch/chat");
 const moment = require("moment");
+const config = require("../../../config");
+const { PRIMARY_BROADCASTER, SECONDARY_BROADCASTER, getBroadcaster } = require("../../broadcaster");
+const { reconnectChatClient } = require("../../twitch/chat");
 const redirect_uri = `http://${config.HOST}:${config.PORT}/api/twitch/authenticate/confirm`;
 
 exports.authenticate = (req, res) => {
@@ -13,7 +14,7 @@ exports.authenticate = (req, res) => {
 
 exports.authConfirm = async (req, res) => {
   const Twitch = require("../../twitch");
-  const { Chatters } = require("../../models");
+  const { Chatters, Tokens } = require("../../models");
   let { code, state } = req.query;
   try {
     state = JSON.parse(state);
@@ -36,25 +37,45 @@ exports.authConfirm = async (req, res) => {
     return accessTokenResponse === false
       ? res.redirect("/api/twitch/authenticate")
       : res.status(400).send({
-          message: "Invalid Access Token",
-          authenticated: false,
-        });
+        message: "Invalid Access Token",
+        authenticated: false,
+      });
   }
 
   const { access_token, refresh_token, expires_in, scope } =
     accessTokenResponse;
   const expires = moment().add(expires_in, "seconds");
-  await Twitch.setAccessToken(
-    { access_token, refresh_token },
-    expires,
-    scope.join(" "),
-  );
+  let tokenChatterId;
+
+  if ([PRIMARY_BROADCASTER, SECONDARY_BROADCASTER].contains(state.t)) {
+    tokenChatterId = PRIMARY_BROADCASTER === state.t ? await getBroadcaster().id : 0
+  } else {
+    return res.status(400).send({
+      message: 'Invalid token state',
+      state,
+      authenticated: false
+    })
+  }
+
+  const [chatterToken] = await Tokens.findOrCreate({
+    where: {
+      token_type: 'twitch'
+    },
+    defaults: {
+      chatter_id: tokenChatterId,
+      token_type: 'twitch',
+      access_token,
+      refresh_token,
+      expires,
+      scope: scope.join(' ')
+    }
+  })
 
   // We need to override the current token in order to pull the data with the
   // token provided by Twitch. Otherwise, the user returned will be that of the
   // broadcaster, if saved.
   //
-  Twitch.overrideCurrentToken(true);
+  Twitch.overrideCurrentToken(true, chatterToken);
   const twitchUserData = await Twitch.getUser();
   Twitch.overrideCurrentToken(false);
 
@@ -70,6 +91,7 @@ exports.authConfirm = async (req, res) => {
     where: {
       twitch_id: twitchUserData.id,
       username: twitchUserData.login,
+      broadcaster
     },
     defaults: {
       twitch_id: twitchUserData.id,
@@ -82,8 +104,9 @@ exports.authConfirm = async (req, res) => {
     },
   });
   const Chatter = chatterResults.length > 0 ? chatterResults.shift() : null;
-  if (Chatter) {
-    await Twitch.setTokenOwner(Chatter.id);
+  if (chatterToken.chatter_id !== Chatter.id) {
+    console.log('udpating token', chatterToken.id)
+    await chatterToken.update({ chatter_id: Chatter.id })
   }
 
   await reconnectChatClient();

@@ -68,7 +68,6 @@ const debug = (message, context, prefix) => {
 const trace = (message, context, prefix) => {
   log({ message, context, type: LEVELS.trace, prefix });
 };
-
 const success = (message, context, prefix) => {
   log({ message, context, type: LEVELS.success, prefix });
 };

@@ -1,14 +1,16 @@
 const log = require("../log");
 const logPrefix = "Spotify Auth";
-const { getBroadcasterWithTokens, getBroadcaster } = require("../broadcaster");
+const { getBroadcaster } = require("../broadcaster");
 const { Tokens } = require("../models");
 
 let currentToken;
 
-exports.loadAccessToken = async () => {
+exports.loadAccessToken = async (chatter_id) => {
   try {
-    const broadcaster = await getBroadcaster();
-    const chatter_id = broadcaster.id
+    if (!chatter_id) {
+      const broadcaster = await getBroadcaster();
+      chatter_id = broadcaster.id
+    }
     const results = await Tokens.findAll({
       where: {
         chatter_id,

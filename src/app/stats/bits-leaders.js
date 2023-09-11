@@ -1,17 +1,17 @@
 const moment = require('moment')
 module.exports = async function () {
   const data = [];
-  const twitch = require('../twitch');
+  const Twitch = require('../twitch');
   const now = moment();
 
-  let count = 1;
+  const count = 1;
   let dailyLeader, monthlyLeader, yearlyLeader;
 
-  const daily = await twitch.getBitsLeaderboard({
+  const daily = await Twitch.getBitsLeaderboard({
     count, period: 'day', started_at: now.startOf('day').toISOString()
   })
   if (daily && daily.total > 0) {
-    dailyLeader = await twitch.getUser(daily.data[0].user_id);
+    dailyLeader = await Twitch.getUser(daily.data[0].user_id);
     data.push({
       title: `Today's Leader`,
       value: daily.data[0].score,
@@ -19,15 +19,15 @@ module.exports = async function () {
     })
   }
 
-  const monthly = await twitch.getBitsLeaderboard({
+  const monthly = await Twitch.getBitsLeaderboard({
     count, period: 'month', started_at: now.startOf('month').toISOString()
   })
 
   if (monthly && monthly.total > 0) {
-    if (dailyLeader.id === monthly.data[0].user_id) {
+    if ((dailyLeader && dailyLeader.id === monthly.data[0].user_id)) {
       monthlyLeader = dailyLeader;
     } else {
-      monthlyLeader = await twitch.getUser(monthly.data[0].user_id);
+      monthlyLeader = await Twitch.getUser(monthly.data[0].user_id);
     }
     data.push({
       title: `Monthly Leader`,
@@ -36,7 +36,7 @@ module.exports = async function () {
     })
   }
 
-  const yearly = await twitch.getBitsLeaderboard({
+  const yearly = await Twitch.getBitsLeaderboard({
     count, period: 'year', started_at: now.startOf('year').toISOString()
   })
   if (yearly && yearly.total > 0) {
@@ -45,7 +45,7 @@ module.exports = async function () {
     } else if (monthlyLeader && (monthlyLeader.id === yearly.data[0].user_id)) {
       yearlyLeader = monthlyLeader
     } else {
-      yearlyLeader = await twitch.getUser(yearly.data[0].user_id);
+      yearlyLeader = await Twitch.getUser(yearly.data[0].user_id);
     }
     data.push({
       title: `Bit Leader`,

@@ -11,14 +11,21 @@ const {
 const twitchCommands = require("../../twitch/chat/commands");
 const twitchEvents = require("../../twitch/chat/events");
 const { makeId } = require("../../support/uuid");
+const { getChatBotAccount } = require("../../twitch");
 
-const createTmiChatState = (Chatter, Broadcaster) => {
+/**
+ * 
+ * @param {Chatters} Chatter 
+ * @param {Chatters} botChatter 
+ * @returns 
+ */
+const createTmiChatState = (Chatter, botChatter) => {
   return {
     _id: Chatter.id,
     [USER_ID]: Chatter.twitch_id,
     [USER_USERNAME]: Chatter.username,
     [USER_COLOR]: "#CF4C00",
-    [USER_ROOM_ID]: Broadcaster.twitch_id,
+    [USER_ROOM_ID]: botChatter.twitch_id,
     [USER_DISPLAY_NAME]: Chatter.display_name,
   };
 };
@@ -35,8 +42,16 @@ const createTmiClientSpoof = function (ws, state) {
   //            ↳ Dragoy_Zzz: 🤖 It is Friday 4:03 PM for aodev.
 
   const eventCallbackCache = {};
+  let stateCopy = { ...state };
+  const reset = async () => {
+    stateCopy = createTmiChatState(
+      await getChatBotAccount(),
+      await getBroadcaster()
+    )
+  }
 
   return {
+    resetTmiState: reset,
     say: async (channel, message) => {
       if (ws) {
         ws.send(
@@ -47,8 +62,8 @@ const createTmiClientSpoof = function (ws, state) {
               messages: [
                 {
                   message,
-                  html: parseChatMessageHtml(message, state),
-                  user: state,
+                  html: parseChatMessageHtml(message, stateCopy),
+                  user: stateCopy,
                 },
               ],
             },
@@ -86,14 +101,15 @@ const createTmiClientSpoof = function (ws, state) {
 };
 
 module.exports = async ({ message, twitch_id }, args, ws) => {
-  const Broadcaster = await getBroadcaster();
-  const chatChannel = Broadcaster.username;
+  const broadcasterChatter = await getBroadcaster();
+  const botChatter = await getChatBotAccount();
+  const chatChannel = broadcasterChatter.username;
   const Chatter =
-    Broadcaster.twitch_id === twitch_id
-      ? Broadcaster
+    botChatter.twitch_id === twitch_id
+      ? botChatter
       : await Chatters.findOne({ where: { twitch_id } });
 
-  const chatState = createTmiChatState(Chatter, Broadcaster);
+  const chatState = createTmiChatState(Chatter, botChatter);
   const tmiClient = createTmiClientSpoof(ws, chatState);
   const chatClient = {
     client: tmiClient,
@@ -103,7 +119,8 @@ module.exports = async ({ message, twitch_id }, args, ws) => {
 
   // Gotta reply to the original message to show it back to
   // the admin user.
-  tmiClient.say(chatChannel, message);
+  await tmiClient.say(chatChannel, message);
+  await tmiClient.resetTmiState();
 
   // Now we pass all the data to the registered chat commands
   // and events to spoof twitch chat

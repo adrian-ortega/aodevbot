@@ -10,10 +10,14 @@ const {
   SECONDARY_BROADCASTER,
 } = require("../broadcaster");
 
-exports.refreshAccessToken = async () => {
+exports.refreshAccessToken = async (chatter_id) => {
   try {
-    const broadcaster = await getBroadcaster();
-    await TokensStore.loadAccessToken();
+    if (!chatter_id) {
+      const broadcaster = await getBroadcaster();
+      chatter_id = broadcaster.id
+    }
+
+    await TokensStore.loadAccessToken(chatter_id);
     const refresh_token = TokensStore.getRefreshToken();
     const { data } = await client.post("https://id.twitch.tv/oauth2/token", {
       client_id: config.TWITCH_CLIENT_ID,
@@ -22,7 +26,7 @@ exports.refreshAccessToken = async () => {
       refresh_token,
     });
     await Tokens.create({
-      chatter_id: broadcaster.id,
+      chatter_id,
       token_type: TokensStore.getTokenType(),
       access_token: data.access_token,
       refresh_token: data.refresh_token,
