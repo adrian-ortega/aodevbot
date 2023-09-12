@@ -25,7 +25,7 @@ const broadcastCurrent = () => {
   broadcastToClients({
     event: 'stats.current',
     payload: {
-      currentGroup: nextGroup,
+      type: nextGroup,
       nextGroup: flip ? groups[0] : 'skip',
       lastTimestamp,
       duration

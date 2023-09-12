@@ -1,4 +1,5 @@
 const log = require("../log");
+const logPrefix = 'Twitch Stream'
 const client = require("./client");
 const { FIVE_MINUTES } = require("../support/time");
 const { pregMatchAll } = require("../support/strings");
@@ -15,7 +16,10 @@ const getStreams = async (user_login) => {
     });
     return data;
   } catch (err) {
-    log.error("getStreams", { err }, "Twitch Streams");
+    log.error("getStreams", {
+      message: err.message,
+      data: err.response && err.response.data ? err.response.data : {}
+    }, logPrefix);
   }
 
   return { data: [], pagination: [] };
@@ -91,7 +95,10 @@ const getStreamChatters = async () => {
     });
     return data;
   } catch (err) {
-    log.error("getStreamChatters", { message: err.message }, "Twitch Streams");
+    log.error("getStreamChatters", {
+      message: err.message,
+      data: err.response && err.response.data ? err.response.data : {}
+    }, logPrefix);
   }
 
   return [];
@@ -129,7 +136,10 @@ const getBroadcasterSubscribers = async () => {
     }
     return data;
   } catch (err) {
-    log.error("getStreamChatters", { message: err.message }, "Twitch Streams");
+    log.error("getStreamChatters", {
+      message: err.message,
+      data: err.response && err.response.data ? err.response.data : {}
+    }, logPrefix);
   }
   return [];
 };

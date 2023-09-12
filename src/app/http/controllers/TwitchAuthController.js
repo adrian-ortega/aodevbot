@@ -45,10 +45,14 @@ exports.authConfirm = async (req, res) => {
   const { access_token, refresh_token, expires_in, scope } =
     accessTokenResponse;
   const expires = moment().add(expires_in, "seconds");
-  let tokenChatterId;
+  let tokenChatterId = -1;
 
-  if ([PRIMARY_BROADCASTER, SECONDARY_BROADCASTER].contains(state.t)) {
-    tokenChatterId = PRIMARY_BROADCASTER === state.t ? await getBroadcaster().id : 0
+  if ([PRIMARY_BROADCASTER, SECONDARY_BROADCASTER].includes(state.t)) {
+    tokenChatterId = 0;
+    if (PRIMARY_BROADCASTER === state.t) {
+      const b = await getBroadcaster();
+      tokenChatterId = b.id;
+    }
   } else {
     return res.status(400).send({
       message: 'Invalid token state',
@@ -59,8 +63,11 @@ exports.authConfirm = async (req, res) => {
 
   const [chatterToken] = await Tokens.findOrCreate({
     where: {
+      chatter_id: tokenChatterId,
       token_type: 'twitch'
     },
+    limit: 1,
+    order: [["expires", "DESC"]],
     defaults: {
       chatter_id: tokenChatterId,
       token_type: 'twitch',
@@ -103,12 +110,14 @@ exports.authConfirm = async (req, res) => {
       broadcaster,
     },
   });
-  const Chatter = chatterResults.length > 0 ? chatterResults.shift() : null;
-  if (chatterToken.chatter_id !== Chatter.id) {
-    console.log('udpating token', chatterToken.id)
-    await chatterToken.update({ chatter_id: Chatter.id })
-  }
-
+  const Chatter = chatterResults.shift();
+  await chatterToken.update({
+    chatter_id: Chatter.id,
+    access_token,
+    refresh_token,
+    expires,
+    scope: scope.join(' ')
+  })
   await reconnectChatClient();
 
   return res.send({
