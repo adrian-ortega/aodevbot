@@ -53,6 +53,10 @@ const onServerConnection = (webSocketConnection, connectionRequest) => {
     default:
       connectedResponse.requestType = "browser-source";
   }
+  webSocketConnection.connectionParams = {
+    requestType: connectedResponse.requestType,
+    connectionParams
+  }
 
   return wsResponse(webSocketConnection, connectionRequest, connectedResponse);
 };
@@ -66,6 +70,18 @@ exports.broadcastToClients = (data) => {
     }
   });
 };
+
+exports.hasClients = () => webSocketServer ? webSocketServer.clients.size : 0
+
+exports.hasOverlayClients = () => {
+  let result = false;
+  webSocketServer.clients.forEach(client => {
+    if (client.connectionParams.requestType === 'browser-source') {
+      result = true;
+    }
+  })
+  return result;
+}
 
 exports.createWebSocketServer = (expressServer) => {
   const { registerActions } = require("./actions");

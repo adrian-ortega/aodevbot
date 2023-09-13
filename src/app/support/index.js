@@ -46,12 +46,17 @@ const shuffleArray = (array, size) => {
   const copy = [...array];
   size = size === undefined ? length : size;
   while (++index < size) {
-    let rand = Math.floor(Math.random() * index);
+    const rand = Math.floor(Math.random() * index);
     [copy[index], copy[rand]] = [copy[rand], copy[index]];
   }
   copy.length = size;
   return copy;
 };
+
+const arrayWrap = (array) => {
+  if (isString(array) || isObject(array)) return [array]
+  return [...array]
+}
 
 module.exports = {
   isEmpty,
@@ -66,6 +71,7 @@ module.exports = {
   getValues,
   wait,
 
+  arrayWrap,
   randomFromArray,
   shuffleArray,
 };

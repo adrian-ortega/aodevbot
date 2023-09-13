@@ -37,3 +37,4 @@ twitch.createChatClient(
 );
 
 require('./app/stats')
+require('./app/spotify/loop')
