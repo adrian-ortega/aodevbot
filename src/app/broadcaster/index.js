@@ -25,7 +25,7 @@ const getBroadcaster = async () => {
  */
 const getBroadcasterOrNull = async () => {
   try {
-    return getBroadcaster();
+    return await getBroadcaster();
   } catch (err) {
     return null;
   }
@@ -52,7 +52,7 @@ const getSecondaryBroadcaster = async () => {
  */
 const getSecondaryBroadcasterOrNull = async () => {
   try {
-    return getSecondaryBroadcaster();
+    return await getSecondaryBroadcaster();
   } catch (err) {
     return null;
   }

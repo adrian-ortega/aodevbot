@@ -38,9 +38,16 @@ let client;
  * @returns {Chatters|null}
  */
 const getChatBotAccount = async () => {
-  let Chatter = await getSecondaryBroadcasterOrNull();
-  if (!Chatter) {
-    Chatter = await getBroadcasterOrNull();
+  let Chatter = null;
+  try {
+    Chatter = await getSecondaryBroadcasterOrNull();
+    if (!Chatter) {
+      Chatter = await getBroadcasterOrNull();
+    }
+  } catch (err) {
+    log.error('getChatBotAccount', {
+      message: err.message,
+    }, logPrefix)
   }
   return Chatter;
 }
@@ -162,6 +169,8 @@ const getTwitchAuthIdentity = () => {
     username: TWITCH_USERNAME,
     password: async () => {
       const botAccount = await getChatBotAccount();
+      if (!botAccount) return '';
+
       const token = await Tokens.findOne({
         where: {
           chatter_id: botAccount.id,
@@ -235,9 +244,12 @@ const createChatClient = async (wss) => {
           }, timeout)
         });
       }
-    } else {
-      log.error("createChatClient", { error: err }, logPrefix);
     }
+    // else {
+    //   log.error("createChatClient", {
+    //     message: err
+    //   }, logPrefix);
+    // }
   }
 };
 
