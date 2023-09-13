@@ -3,30 +3,58 @@ const { requestAnimationFrame, ONE_SECOND, ONE_MINUTE } = require('../support/ti
 
 let timeoutId;
 let fetching = false;
+let fetchingDevices = false;
+let fetchingPS = false;
 let lastTimestamp, lastDevicesTimestamp, lastPlayerTimestamp;
 
+const broadcastCurrent = async () => {
+  const { broadcastToClients } = require('../websockets')
+  const Spotify = require('../spotify')
+  broadcastToClients({
+    event: 'spotify.currently-playing',
+    payload: await Spotify.getCurrentlyPlaying()
+  })
+  broadcastToClients({
+    event: 'spotify.player-state',
+    payload: await Spotify.getPlayerState()
+  })
+  broadcastToClients({
+    event: 'spotify.devices',
+    payload: await Spotify.getDevices()
+  })
+}
+
 const handle = async (timestamp, broadcastToClients) => {
+  if (fetching) return;
+
+  fetching = true;
   const Spotify = require('../spotify')
   broadcastToClients({
     event: 'spotify.currently-playing',
     payload: await Spotify.getCurrentlyPlaying()
   })
 
-  if ((timestamp - lastPlayerTimestamp) > ONE_MINUTE * 0.25) {
+  if (!fetchingPS && (timestamp - lastPlayerTimestamp) > ONE_MINUTE * 0.25) {
+    fetchingPS = true;
     lastPlayerTimestamp = timestamp
     broadcastToClients({
       event: 'spotify.player-state',
       payload: await Spotify.getPlayerState()
     })
+    fetchingPS = false;
   }
 
-  if ((timestamp - lastDevicesTimestamp) > ONE_MINUTE) {
+  if (!fetchingDevices && (timestamp - lastDevicesTimestamp) > ONE_MINUTE) {
+    fetchingDevices = true;
     lastDevicesTimestamp = timestamp;
     broadcastToClients({
       event: 'spotify.devices',
       payload: await Spotify.getDevices()
     })
+    fetchingDevices = false;
   }
+
+  fetching = false;
 }
 
 const loop = async (timestamp) => {
@@ -40,18 +68,20 @@ const loop = async (timestamp) => {
     return;
   }
 
-  fetching = true;
   lastTimestamp = timestamp;
   await handle(timestamp, broadcastToClients);
-  fetching = false
 }
 
 const init = () => {
   clearTimeout(timeoutId)
   timeoutId = requestAnimationFrame((timestamp) => {
+    const { broadcastToClients } = require('../websockets')
     lastTimestamp = timestamp
-    lastDevicesTimestamp = timestamp
-    lastPlayerTimestamp = timestamp
+    lastDevicesTimestamp = timestamp + ONE_MINUTE * 3
+    lastPlayerTimestamp = lastDevicesTimestamp
+    handle(timestamp, broadcastToClients)
+
+
     timeoutId = requestAnimationFrame(loop)
   })
 }

@@ -83,6 +83,10 @@ exports.hasOverlayClients = () => {
   return result;
 }
 
+exports.onConnection = () => {
+
+}
+
 exports.createWebSocketServer = (expressServer) => {
   const { registerActions } = require("./actions");
   const { registerEventListeners } = require("./events");
