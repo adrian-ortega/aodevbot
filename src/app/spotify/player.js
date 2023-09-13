@@ -1,15 +1,18 @@
 const log = require("../log");
+const { objectHasProp } = require("../support");
 const logPrefix = "Spotify Player";
 const client = require("./client");
 
 exports.getCurrentlyPlaying = async () => {
   try {
-    const { data } = await client.get('/me/player/currently-playing')
-    console.log({ data })
+    const { data, status } = await client.get('/me/player/currently-playing')
+    if (status === 204) {
+      return null;
+    }
 
     return data;
   } catch (err) {
-    log.error('getPlayerState', {
+    log.error('getCurrentlyPlaying', {
       message: err.message,
       data: err.response && err.response.data ? err.response.data : {}
     }, logPrefix)
@@ -19,8 +22,10 @@ exports.getCurrentlyPlaying = async () => {
 
 exports.getPlayerState = async () => {
   try {
-    const { data } = await client.get('/me/player')
-    console.log({ data })
+    const { data, status } = await client.get('/me/player')
+    if (status === 204) {
+      return null;
+    }
     return data;
   } catch (err) {
     log.error('getPlayerState', {
@@ -34,8 +39,7 @@ exports.getPlayerState = async () => {
 exports.getDevices = async () => {
   try {
     const { data } = await client.get('/me/player/devices')
-    console.log({ data })
-    return data;
+    return objectHasProp(data, 'devices') ? data.devices : [];
   } catch (err) {
     log.error('getDevices', {
       message: err.message,

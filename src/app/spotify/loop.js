@@ -1,27 +1,32 @@
 
-const log = require('../log');
-const logPrefix = 'Spotify Loop'
-const { requestAnimationFrame, ONE_SECOND } = require('../support/time');
+const { requestAnimationFrame, ONE_SECOND, ONE_MINUTE } = require('../support/time');
 
 let timeoutId;
 let fetching = false;
-let lastTimestamp;
-const DURATION = ONE_SECOND * 5;
+let lastTimestamp, lastDevicesTimestamp, lastPlayerTimestamp;
 
-const getCurrent = async () => { }
-
-const broadcastCurrent = async () => { }
-
-// --
-
-const handle = async () => {
+const handle = async (timestamp, broadcastToClients) => {
   const Spotify = require('../spotify')
-  const currentlyPlaying = await Spotify.getCurrentlyPlaying();
-  const playerState = await Spotify.getPlayerState();
+  broadcastToClients({
+    event: 'spotify.currently-playing',
+    payload: await Spotify.getCurrentlyPlaying()
+  })
 
-  console.log({ currentlyPlaying, playerState })
+  if ((timestamp - lastPlayerTimestamp) > ONE_MINUTE * 0.25) {
+    lastPlayerTimestamp = timestamp
+    broadcastToClients({
+      event: 'spotify.player-state',
+      payload: await Spotify.getPlayerState()
+    })
+  }
 
-  return null;
+  if ((timestamp - lastDevicesTimestamp) > ONE_MINUTE) {
+    lastDevicesTimestamp = timestamp;
+    broadcastToClients({
+      event: 'spotify.devices',
+      payload: await Spotify.getDevices()
+    })
+  }
 }
 
 const loop = async (timestamp) => {
@@ -31,31 +36,23 @@ const loop = async (timestamp) => {
     return;
   }
 
-  if ((timestamp - lastTimestamp) < DURATION) {
+  if ((timestamp - lastTimestamp) < ONE_SECOND * 5) {
     return;
   }
 
   fetching = true;
   lastTimestamp = timestamp;
-  const payload = await handle();
-  log.debug('Broadcasting', { payload }, logPrefix)
-  broadcastToClients({
-    event: 'spotify',
-    payload
-  })
+  await handle(timestamp, broadcastToClients);
   fetching = false
 }
 
 const init = () => {
   clearTimeout(timeoutId)
-  broadcastCurrent();
   timeoutId = requestAnimationFrame((timestamp) => {
     lastTimestamp = timestamp
+    lastDevicesTimestamp = timestamp
+    lastPlayerTimestamp = timestamp
     timeoutId = requestAnimationFrame(loop)
   })
 }
 init();
-
-module.exports = {
-  getCurrent
-}
