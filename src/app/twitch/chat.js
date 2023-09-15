@@ -1,6 +1,5 @@
 const WebSocket = require("ws");
-const log = require("../log");
-const logPrefix = "Twitch Chat";
+const log = require("../log").withPrefix('Twitch Chat');
 const chalk = require("chalk");
 
 const commands = require("./chat/commands");
@@ -47,7 +46,7 @@ const getChatBotAccount = async () => {
   } catch (err) {
     log.error('getChatBotAccount', {
       message: err.message,
-    }, logPrefix)
+    })
   }
   return Chatter;
 }
@@ -93,7 +92,7 @@ const logMessage = async (message_content, state) => {
       });
     }
   } catch (err) {
-    log.error("logMessage", { message: err.message, }, logPrefix);
+    log.error("logMessage", { message: err.message, });
   }
 };
 
@@ -124,10 +123,10 @@ const onJoin = async (channel, username, self) => {
     await initPointsSync();
     tmiConnected = true;
     const bChatter = await getChatBotAccount();
-    return log.success(`Connected as ${bChatter.display_name}/${bChatter.twitch_id}`, null, logPrefix);
+    return log.success(`Connected as ${bChatter.display_name}/${bChatter.twitch_id}`);
   }
 
-  log.debug(`Chatter ${chalk.cyan(username)} has joined.`, null, logPrefix);
+  log.debug(`Chatter ${chalk.cyan(username)} has joined.`, null);
   // @TODO send event to Chat log?
 };
 
@@ -153,7 +152,7 @@ const onMessage = async (channel, state, message, self) => {
       events.maybeRun(channel, state, message, chatClient);
     }
   } catch (err) {
-    log.error("onMessage", { message: err.message, err, }, logPrefix);
+    log.error("onMessage", { message: err.message, err, });
   }
 };
 
@@ -234,22 +233,17 @@ const createChatClient = async (wss) => {
       const retry = tmiConnectRetries++ < TMI_RECONNECT_RETRIES;
       const botAccount = await getChatBotAccount();
       if (!botAccount) {
-        log.error('No Chat bot account found', null, logPrefix)
+        log.error('No Chat bot account found')
       } else if (retry && (await refreshAccessToken(botAccount.id))) {
         return new Promise((resolve) => {
           const timeout = ONE_SECOND * (tmiConnectRetries * 2);
-          log.warn(`Reconnecting in ${timeout / ONE_SECOND} secs (Retry ${tmiConnectRetries})...`, null, logPrefix);
+          log.warn(`Reconnecting in ${timeout / ONE_SECOND} secs (Retry ${tmiConnectRetries})...`);
           setTimeout(() => {
             resolve(createChatClient());
           }, timeout)
         });
       }
     }
-    // else {
-    //   log.error("createChatClient", {
-    //     message: err
-    //   }, logPrefix);
-    // }
   }
 };
 
@@ -257,7 +251,7 @@ const reconnectChatClient = async () => {
   if (client) {
     await client.disconnect();
   }
-  log.debug("Reconnecting", null, logPrefix);
+  log.debug("Reconnecting");
   return createChatClient();
 };
 
