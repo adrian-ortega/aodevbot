@@ -14,19 +14,16 @@ module.exports = ({ message, context, type, levels, timestamp, prefix }) => {
       message = chalk.green(message);
       break;
     case levels.info:
-      message = chalk.cyan(message);
+      message = chalk.white(message);
       break;
   }
 
-  const args = [
-    `${chalk.gray(timestamp)}${
-      prefix ? ` ${chalk.blue(`[${prefix}]`)}` : ""
-    } ${message}`,
-  ];
+  let line = `${chalk.dim(timestamp)}`
+  line += prefix ? ` ${chalk.magenta(`[${prefix}]`)}` : ""
+  line += ' ' + message
 
+  console.log.call(null, line);
   if (DEBUG && context) {
-    args.push(context);
+    console.log.call(null, context);
   }
-
-  console.log.apply(null, args);
 };

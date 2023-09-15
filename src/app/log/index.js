@@ -31,55 +31,62 @@ const handlers = [
   require("./websocker-handler")
 ];
 
-const log = ({ message, context = undefined, type = LOGGER_INFO, prefix }) => {
-  const timestampRaw = moment().tz(DEFAULT_TIMEZONE);
-  const timestamp = `[${timestampRaw.format("h:mm:ss A")}]`;
-  for (let i = 0; i < handlers.length; i++) {
-    handlers[i].apply(this, [
-      {
-        message,
-        context,
-        type,
-        levels: LEVELS,
-        levelNames: LEVEL_NAMES,
-        timestamp,
-        timestampRaw,
-        prefix,
-      },
-    ]);
+class Logger {
+  constructor() {
+    this.prefix = '';
   }
-};
 
-const fatal = (message, context, prefix) => {
-  log({ message, context, type: LEVELS.fatal, prefix });
-};
-const error = (message, context, prefix) => {
-  log({ message, context, type: LEVELS.error, prefix });
-};
-const warn = (message, context, prefix) => {
-  log({ message, context, type: LEVELS.warn, prefix });
-};
-const info = (message, context, prefix) => {
-  log({ message, context, type: LEVELS.info, prefix });
-};
-const debug = (message, context, prefix) => {
-  log({ message, context, type: LEVELS.debug, prefix });
-};
-const trace = (message, context, prefix) => {
-  log({ message, context, type: LEVELS.trace, prefix });
-};
-const success = (message, context, prefix) => {
-  log({ message, context, type: LEVELS.success, prefix });
-};
+  withPrefix(prefix) {
+    return (new Logger).setPrefix(prefix)
+  }
 
-module.exports = {
-  fatal,
-  error,
-  warn,
-  info,
-  debug,
-  trace,
-  success,
-  LEVELS,
-  LEVEL_NAMES,
-};
+  setPrefix(prefix) {
+    this.prefix = prefix
+    return this
+  }
+
+  log({ message, context = undefined, type = LOGGER_INFO, prefix }) {
+    const timestampRaw = moment().tz(DEFAULT_TIMEZONE);
+    const timestamp = `[${timestampRaw.format("h:mm:ss A")}]`;
+    for (let i = 0; i < handlers.length; i++) {
+      handlers[i].apply(this, [
+        {
+          message,
+          context,
+          type,
+          levels: LEVELS,
+          levelNames: LEVEL_NAMES,
+          timestamp,
+          timestampRaw,
+          prefix: prefix || this.prefix,
+        },
+      ]);
+    }
+    return this;
+  }
+
+  fatal(message, context, prefix) {
+    return this.log({ message, context, type: LEVELS.fatal, prefix });
+  };
+  error(message, context, prefix) {
+    return this.log({ message, context, type: LEVELS.error, prefix });
+  }
+  warn(message, context, prefix) {
+    return this.log({ message, context, type: LEVELS.warn, prefix });
+  }
+  info(message, context, prefix) {
+    return this.log({ message, context, type: LEVELS.info, prefix });
+  }
+  debug(message, context, prefix) {
+    return this.log({ message, context, type: LEVELS.debug, prefix });
+  }
+  trace(message, context, prefix) {
+    return this.log({ message, context, type: LEVELS.trace, prefix });
+  }
+  success(message, context, prefix) {
+    return this.log({ message, context, type: LEVELS.success, prefix });
+  }
+
+}
+
+module.exports = new Logger;
