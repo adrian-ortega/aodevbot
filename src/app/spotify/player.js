@@ -48,3 +48,55 @@ exports.getDevices = async () => {
   }
   return [];
 }
+
+exports.skipToNext = async () => {
+  try {
+    const player_state = await this.getPlayerState()
+    await client.post('/me/player/next', {
+      params: {
+        device_id: player_state?.device?.id
+      }
+    })
+  } catch (err) {
+    // console.log(err)
+  }
+}
+
+exports.playResume = async () => {
+  try {
+    const player_state = await this.getPlayerState()
+    await client.put('/me/player/play', {
+      params: {
+        device_id: player_state?.device?.id
+      }
+    })
+  } catch (err) {
+    // console.log(err)
+  }
+}
+
+exports.pause = async () => {
+  try {
+    const player_state = await this.getPlayerState()
+    await client.put('/me/player/pause', {
+      params: {
+        device_id: player_state?.device?.id
+      }
+    })
+  } catch (err) {
+    // console.log(err)
+  }
+}
+
+exports.skipToPrevious = async () => {
+  try {
+    const player_state = await this.getPlayerState()
+    await client.post('/me/player/previous', {
+      params: {
+        device_id: player_state?.device?.id
+      }
+    })
+  } catch (err) {
+    // console.log(err)
+  }
+}

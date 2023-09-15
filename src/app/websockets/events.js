@@ -53,6 +53,13 @@ const registerEventListeners = async () => {
   addEventListener('stats.next', stats.next);
   addEventListener('stats.current', stats.current);
   addEventListener('stats.stop', stats.stop)
+
+  const spotify = require('./events/spotify');
+  addEventListener('spotify.current', spotify.current);
+  addEventListener('spotify.next', spotify.skipNext);
+  addEventListener('spotify.play', spotify.playResume);
+  addEventListener('spotify.pause', spotify.pause);
+  addEventListener('spotify.previous', spotify.skipPrevious);
 };
 
 module.exports = {
