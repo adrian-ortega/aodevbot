@@ -45,7 +45,8 @@ exports.authConfirm = async (req, res) => {
   const { access_token, refresh_token, expires_in, scope } =
     accessTokenResponse;
   const expires = moment().add(expires_in, "seconds");
-  let tokenChatterId = -1, broadcasterType = 0;
+  let tokenChatterId = -1
+  let broadcasterType = 0;
 
   if ([PRIMARY_BROADCASTER, SECONDARY_BROADCASTER].includes(state.t)) {
     tokenChatterId = 0;
@@ -100,8 +101,7 @@ exports.authConfirm = async (req, res) => {
   const chatterResults = await Chatters.findOrCreate({
     where: {
       twitch_id: twitchUserData.id,
-      username: twitchUserData.login,
-      broadcaster: broadcasterType
+      username: twitchUserData.login
     },
     defaults: {
       twitch_id: twitchUserData.id,
