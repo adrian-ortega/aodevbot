@@ -12,6 +12,7 @@ router.get("/streams/stream", streamsController.stream);
 router.get("/user/:username", mainController.getUser);
 router.get("/chat/chatters", mainController.getChatters);
 
+router.get('/chat/rewards', mainController.getRewards)
 // router.get('/webhooks/status', webhookController.status);
 // router.get('/webhooks/handle', webhookController.handleWebhook);
 

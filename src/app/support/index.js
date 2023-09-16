@@ -58,6 +58,21 @@ const arrayWrap = (array) => {
   return [...array]
 }
 
+const compareObjects = (obj1, obj2, props = []) => {
+  if (!isObject(obj1) || !isObject(obj2)) return false;
+  if (!props) {
+    return compareObjects(obj1, obj2, Object.keys(obj1))
+  }
+
+  for (let i = 0; i < props.length; i++) {
+    if (obj1[props[i]] !== obj2[props[i]]) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 module.exports = {
   isEmpty,
   isString,
@@ -74,4 +89,6 @@ module.exports = {
   arrayWrap,
   randomFromArray,
   shuffleArray,
+
+  compareObjects,
 };

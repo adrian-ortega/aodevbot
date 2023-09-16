@@ -7,6 +7,7 @@ const ChatterModel = (sequelize, Sequelize) => {
     display_name: { type: STRING },
     profile_image_url: { type: STRING },
     broadcaster: { type: INTEGER, defaultValue: false },
+    color: { type: STRING(20), defaultValue: null },
     subscriber: { type: BOOLEAN, defaultValue: false },
     mod: { type: BOOLEAN, defaultValue: false },
     points: { type: BIGINT, defaultValue: 0 },

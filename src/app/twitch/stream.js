@@ -1,5 +1,4 @@
-const log = require("../log");
-const logPrefix = 'Twitch Stream'
+const log = require("../log").withPrefix('Twitch Stream');
 const client = require("./client");
 const { FIVE_MINUTES } = require("../support/time");
 const { pregMatchAll } = require("../support/strings");
@@ -19,7 +18,7 @@ const getStreams = async (user_login) => {
     log.error("getStreams", {
       message: err.message,
       data: err.response && err.response.data ? err.response.data : {}
-    }, logPrefix);
+    });
   }
 
   return { data: [], pagination: [] };
@@ -98,7 +97,7 @@ const getStreamChatters = async () => {
     log.error("getStreamChatters", {
       message: err.message,
       data: err.response && err.response.data ? err.response.data : {}
-    }, logPrefix);
+    });
   }
 
   return [];
@@ -117,7 +116,10 @@ const getSubscriptions = async (broadcaster_id, after = null) => {
     const { data } = await client.get("/helix/subscriptions", { params });
     return data;
   } catch (err) {
-    log.error("getSubscriptions", { message: err.message }, "Twitch Streams");
+    log.error("getSubscriptions", {
+      message: err.message,
+      data: err.response && err.response.data ? err.response.data : {}
+    });
   }
   return [];
 };
@@ -139,7 +141,7 @@ const getBroadcasterSubscribers = async () => {
     log.error("getStreamChatters", {
       message: err.message,
       data: err.response && err.response.data ? err.response.data : {}
-    }, logPrefix);
+    });
   }
   return [];
 };

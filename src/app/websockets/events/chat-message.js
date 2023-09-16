@@ -24,7 +24,7 @@ const createTmiChatState = (Chatter, botChatter) => {
     _id: Chatter.id,
     [USER_ID]: Chatter.twitch_id,
     [USER_USERNAME]: Chatter.username,
-    [USER_COLOR]: "#CF4C00",
+    [USER_COLOR]: Chatter.color || null,
     [USER_ROOM_ID]: botChatter.twitch_id,
     [USER_DISPLAY_NAME]: Chatter.display_name,
   };

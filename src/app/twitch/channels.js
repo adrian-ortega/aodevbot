@@ -21,3 +21,22 @@ exports.getChannelInformation = async (broadcaster_id) => {
   }
   return null;
 }
+
+exports.getCustomRewardRedemptions = async (broadcaster_id) => {
+  try {
+    if (!isNumeric(broadcaster_id)) {
+      const user = await getUser(broadcaster_id);
+      if (!user) {
+        throw new Error('User not found')
+      }
+      broadcaster_id = user.id;
+
+      const { data } = await client.get('/helix/channel_points/custom_rewards', {
+        params: { broadcaster_id }
+      })
+      return data.data;
+    }
+  } catch (err) {
+    console.log(err)
+  }
+}

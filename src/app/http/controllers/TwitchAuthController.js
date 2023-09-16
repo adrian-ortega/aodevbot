@@ -1,6 +1,6 @@
 const moment = require("moment");
 const config = require("../../../config");
-const { PRIMARY_BROADCASTER, SECONDARY_BROADCASTER, getBroadcaster } = require("../../broadcaster");
+const { PRIMARY_BROADCASTER, SECONDARY_BROADCASTER, getBroadcasterOrNull } = require("../../broadcaster");
 const { reconnectChatClient } = require("../../twitch/chat");
 const redirect_uri = `http://${config.HOST}:${config.PORT}/api/twitch/authenticate/confirm`;
 
@@ -45,13 +45,17 @@ exports.authConfirm = async (req, res) => {
   const { access_token, refresh_token, expires_in, scope } =
     accessTokenResponse;
   const expires = moment().add(expires_in, "seconds");
-  let tokenChatterId = -1;
+  let tokenChatterId = -1, broadcasterType = 0;
 
   if ([PRIMARY_BROADCASTER, SECONDARY_BROADCASTER].includes(state.t)) {
     tokenChatterId = 0;
+    broadcasterType = SECONDARY_BROADCASTER
     if (PRIMARY_BROADCASTER === state.t) {
-      const b = await getBroadcaster();
-      tokenChatterId = b.id;
+      broadcasterType = PRIMARY_BROADCASTER
+      const b = await getBroadcasterOrNull();
+      if (b) {
+        tokenChatterId = b.id;
+      }
     }
   } else {
     return res.status(400).send({
@@ -93,12 +97,11 @@ exports.authConfirm = async (req, res) => {
     });
   }
 
-  const broadcaster = state.t ? state.t : 0;
   const chatterResults = await Chatters.findOrCreate({
     where: {
       twitch_id: twitchUserData.id,
       username: twitchUserData.login,
-      broadcaster
+      broadcaster: broadcasterType
     },
     defaults: {
       twitch_id: twitchUserData.id,
@@ -107,7 +110,7 @@ exports.authConfirm = async (req, res) => {
       profile_image_url: twitchUserData.profile_image_url,
       mod: true,
       subscriber: true,
-      broadcaster,
+      broadcaster: broadcasterType
     },
   });
   const Chatter = chatterResults.shift();

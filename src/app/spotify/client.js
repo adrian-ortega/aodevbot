@@ -53,15 +53,10 @@ const responseRefreshTokenInterceptor = async function (err) {
       instance.defaults.headers.Authorization = `Bearer ${access_token}`;
       return instance(ogConfig);
     } catch (_err) {
-      console.log(_err);
+      // console.log(_err);
     }
   }
   const data = err.response ? err.response.data : {}
-  log.error(
-    "responseRefreshTokenInterceptor",
-    { message: err.message, data },
-    logPrefix,
-  );
   return Promise.reject(err);
 };
 

@@ -10,3 +10,10 @@ exports.getChatters = async (req, res) => {
   const { data } = await Twitch.getStreamChatters();
   return res.send({ data });
 };
+
+
+exports.getRewards = async (req, res) => {
+  const Twitch = require('../../twitch');
+  const data = await Twitch.getCustomRewardRedemptions()
+  return res.send({ data })
+}

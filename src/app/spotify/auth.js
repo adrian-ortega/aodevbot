@@ -28,8 +28,8 @@ exports.refreshAccessToken = async (refresh_token) => {
     );
     return data;
   } catch (err) {
-    const data = err.response ? err.response.data : {}
-    log.error("Refresh token failed", { message: err.message, data }, logPrefix);
+    // const data = err.response ? err.response.data : {}
+    // log.error("Refresh token failed", { message: err.message, data }, logPrefix);
   }
 
   return null;

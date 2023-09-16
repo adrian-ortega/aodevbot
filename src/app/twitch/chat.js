@@ -21,6 +21,7 @@ const {
   USER_IS_MOD,
   USER_USERNAME,
   USER_DISPLAY_NAME,
+  USER_COLOR,
 } = require("./chat/state-keys");
 
 const TMI_RECONNECT_RETRIES = 5;
@@ -28,6 +29,7 @@ const TMI_SENT_STAMP = "tmi-sent-ts";
 
 const tmi = require("tmi.js");
 const { ONE_SECOND } = require("../support/time");
+const { compareObjects } = require("../support");
 let tmiConnected;
 let tmiConnectRetries = 0;
 
@@ -68,12 +70,14 @@ const getChatterFromChatState = async (state) => {
       subscriber: state[USER_IS_SUB],
     },
   });
-  const Chatter = chatterResults.length > 0 ? chatterResults[0] : null;
-  if (Chatter && Chatter.subscriber !== state[USER_IS_MOD]) {
-    Chatter.update({
-      mod: state[USER_IS_MOD],
-      subscriber: state[USER_IS_SUB],
-    });
+  const Chatter = chatterResults.shift()
+  const chatterUpdateFields = {
+    mod: state[USER_IS_MOD],
+    subscriber: state[USER_IS_SUB],
+    color: state[USER_COLOR],
+  }
+  if (!compareObjects(Chatter, chatterUpdateFields, Object.keys(chatterUpdateFields))) {
+    Chatter.update(chatterUpdateFields);
   }
   return Chatter;
 };
@@ -87,6 +91,7 @@ const logMessage = async (message_content, state) => {
       await Chat.create({
         twitch_id: state[USER_ID],
         stream_id,
+        color: state[USER_COLOR],
         message_content,
         created_at: new Date(parseInt(state[TMI_SENT_STAMP], 10)),
       });
@@ -132,8 +137,35 @@ const onJoin = async (channel, username, self) => {
 
 const triggerSelfEvents = () => { };
 
+/*
+{
+  'badge-info': null,
+  badges: { moderator: '1' },
+  'client-nonce': '3c0f4502c0c6f1b61b87ac84a17e61c2',
+  color: '#FF69B4',
+  'display-name': 'AODEVBOT',
+  emotes: null,
+  'first-msg': false,
+  flags: null,
+  id: '0118cd34-1113-4011-b2c4-cfe07938e575',
+  mod: true,
+  'returning-chatter': false,
+  'room-id': '87329705',
+  subscriber: false,
+  'tmi-sent-ts': '1694802256476',
+  turbo: false,
+  'user-id': '626100037',
+  'user-type': 'mod',
+  'emotes-raw': null,
+  'badge-info-raw': null,
+  'badges-raw': 'moderator/1',
+  username: 'aodevbot',
+  'message-type': 'chat'
+}
+*/
 const onMessage = async (channel, state, message, self) => {
   try {
+    console.log(state);
     if (self) {
       return triggerSelfEvents(channel, state, message);
     }
@@ -239,7 +271,7 @@ const createChatClient = async (wss) => {
           const timeout = ONE_SECOND * (tmiConnectRetries * 2);
           log.warn(`Reconnecting in ${timeout / ONE_SECOND} secs (Retry ${tmiConnectRetries})...`);
           setTimeout(() => {
-            resolve(createChatClient());
+            resolve(createChatClient(wss));
           }, timeout)
         });
       }

@@ -12,10 +12,13 @@ exports.getCurrentlyPlaying = async () => {
 
     return data;
   } catch (err) {
-    log.error('getCurrentlyPlaying', {
-      message: err.message,
-      data: err.response && err.response.data ? err.response.data : {}
-    }, logPrefix)
+    console.log(err.status)
+    if (err.status !== 401) {
+      log.error('getCurrentlyPlaying', {
+        message: err.message,
+        data: err.response && err.response.data ? err.response.data : {}
+      }, logPrefix)
+    }
   }
   return null;
 }
