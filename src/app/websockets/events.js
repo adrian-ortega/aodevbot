@@ -60,6 +60,9 @@ const registerEventListeners = async () => {
   addEventListener('spotify.play', spotify.playResume);
   addEventListener('spotify.pause', spotify.pause);
   addEventListener('spotify.previous', spotify.skipPrevious);
+
+  const debugCommands = require('./events/debug-commands');
+  addEventListener('debug.redeemable', debugCommands.triggerRedeemableEvent)
 };
 
 module.exports = {

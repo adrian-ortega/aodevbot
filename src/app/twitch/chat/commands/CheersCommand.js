@@ -21,7 +21,7 @@ const getUserStats = async (twitch_id) => {
 
 const CHEER_REPLIES = [
   {
-    names: ["cheers", "prohst", "sante", "prohst"],
+    names: ["cheers", "prohst", "sante", "prohst", "kippis"],
     replies: [
       "Cheers man! This goes out to you @{0}!",
       "Hey @{0}, that's {1} this round! Cheers bubba.",

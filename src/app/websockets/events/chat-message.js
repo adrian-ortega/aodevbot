@@ -79,8 +79,6 @@ const createTmiClientSpoof = function (ws, state) {
           eventCallbackCache[eventCallbackId] = (ogMessage) => {
             const data = JSON.parse(ogMessage);
             if (!data.event) return;
-
-            console.log(data);
             getBroadcaster().then((broadcaster) => {
               callback(broadcaster.username, {}, data.payload.message);
             });
@@ -128,3 +126,7 @@ module.exports = async ({ message, twitch_id }, args, ws) => {
     twitchEvents.maybeRun(chatChannel, chatState, message, chatClient);
   }
 };
+
+module.exports = Object.assign(module.exports, {
+  createTmiChatState
+})

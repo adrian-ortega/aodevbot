@@ -1,5 +1,6 @@
 const { getBroadcasterTwitchId } = require("../broadcaster");
 const log = require("../log");
+const { isString, isNumeric } = require("../support");
 const logPrefix = "Twitch Users";
 const client = require("./client");
 
@@ -93,7 +94,7 @@ const getUser = async (id) => {
   try {
     const params = { first: 1, id: null };
     if (id) {
-      if (isNaN(id)) {
+      if (!isNumeric(id)) {
         params.login = id;
       } else {
         params.id = id;
@@ -104,7 +105,7 @@ const getUser = async (id) => {
     return data.length > 0 ? data[0] : null;
   } catch (err) {
     const data = err.response && err.response.data ? err.response.data : {}
-    log.error("getUser", { message: err.message, data }, logPrefix);
+    log.error("getUser", { id, message: err.message, data }, logPrefix);
   }
 
   return null;

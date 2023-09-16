@@ -131,7 +131,8 @@ const onJoin = async (channel, username, self) => {
     return log.success(`Connected as ${bChatter.display_name}/${bChatter.twitch_id}`);
   }
 
-  log.debug(`Chatter ${chalk.cyan(username)} has joined.`, null);
+  const _un = username.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '')
+  log.debug(`Chatter ${chalk.cyan(_un)} has joined.`, null);
   // @TODO send event to Chat log?
 };
 
@@ -165,7 +166,6 @@ const triggerSelfEvents = () => { };
 */
 const onMessage = async (channel, state, message, self) => {
   try {
-    console.log(state);
     if (self) {
       return triggerSelfEvents(channel, state, message);
     }
@@ -227,7 +227,7 @@ const createChatClient = async (wss) => {
       },
       identity,
       channels: [identity.username],
-      logger: log
+      logger: log,
     });
     client.on("join", onJoin);
     client.on("message", onMessage);

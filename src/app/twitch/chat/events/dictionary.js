@@ -1,4 +1,6 @@
-const registeredEvents = [require("./FirstToChatEvent")];
+const registeredEvents = [
+  require("./FirstToChatEvent")
+];
 
 module.exports = (events) => {
   events.clear();
