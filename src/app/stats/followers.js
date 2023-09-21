@@ -21,7 +21,7 @@ module.exports = async function () {
   }
 
   const subscribers = await twitch.getSubscribers()
-  if (subscribers.length > 0) {
+  if (subscribers && subscribers.length > 0) {
     const subscriber = await twitch.getUser(randomFromArray(subscribers).user_id)
     data.push({
       title: '<strong>so!</strong> to subscriber',

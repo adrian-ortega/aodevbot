@@ -1,5 +1,5 @@
-const log = require("../log");
-const logPrefix = "Twitch Tokens";
+const log = require("../log").withPrefix('Twitch Tokens');
+const chalk = require('chalk');
 const { getBroadcaster } = require("../broadcaster");
 const { Tokens } = require("../models");
 
@@ -11,7 +11,7 @@ let currentTokenOverride = false;
 /**
  * @returns {Tokens|null|undefined}
  */
-exports.loadAccessToken = async (chatter_id) => {
+exports.loadAccessToken = async (chatter_id = null) => {
   if (!currentTokenOverride) {
     try {
       if (!chatter_id) {
@@ -35,7 +35,7 @@ exports.loadAccessToken = async (chatter_id) => {
       log.error("Twitch.tokens.load", { message: err.message, }, logPrefix);
     }
   }
-  return currentToken;
+  return currentToken && currentToken instanceof Tokens ? currentToken : null;
 };
 
 /**

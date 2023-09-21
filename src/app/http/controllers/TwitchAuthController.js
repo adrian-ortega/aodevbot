@@ -14,7 +14,7 @@ exports.authenticate = (req, res) => {
 
 exports.authConfirm = async (req, res) => {
   const Twitch = require("../../twitch");
-  const { Chatters, Tokens } = require("../../models");
+  const { Chatters, Tokens, Sequelize } = require("../../models");
   let { code, state } = req.query;
   try {
     state = JSON.parse(state);
@@ -69,7 +69,10 @@ exports.authConfirm = async (req, res) => {
   const [chatterToken] = await Tokens.findOrCreate({
     where: {
       chatter_id: tokenChatterId,
-      token_type: 'twitch'
+      token_type: 'twitch',
+      expires: {
+        [Sequelize.Op.gt]: moment.now()
+      }
     },
     limit: 1,
     order: [["expires", "DESC"]],
@@ -87,6 +90,7 @@ exports.authConfirm = async (req, res) => {
   // token provided by Twitch. Otherwise, the user returned will be that of the
   // broadcaster, if saved.
   //
+  console.clear();
   Twitch.overrideCurrentToken(true, chatterToken);
   const twitchUserData = await Twitch.getUser();
   Twitch.overrideCurrentToken(false);
@@ -121,6 +125,7 @@ exports.authConfirm = async (req, res) => {
     expires,
     scope: scope.join(' ')
   })
+
   await reconnectChatClient();
 
   return res.send({

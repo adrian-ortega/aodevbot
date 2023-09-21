@@ -1,7 +1,6 @@
 const { getBroadcasterTwitchId } = require("../broadcaster");
-const log = require("../log");
-const { isString, isNumeric } = require("../support");
-const logPrefix = "Twitch Users";
+const log = require("../log").withPrefix("Twitch Users");
+const { isNumeric } = require("../support");
 const client = require("./client");
 
 const getSubscriptions = async (broadcaster_id, after = null) => {
@@ -13,32 +12,46 @@ const getSubscriptions = async (broadcaster_id, after = null) => {
     const { data: responseData } = await client.get('/helix/subscriptions', { params })
     return responseData;
   } catch (err) {
-    log.error('getSubscriptions', { message: err.message }, logPrefix);
+    log.error('getSubscriptions', { message: err.message });
+    return null;
   }
 }
 
 const getSubscriberTotal = async (broadcaster_id) => {
-  if (!broadcaster_id) {
-    broadcaster_id = await getBroadcasterTwitchId();
+  try {
+    if (!broadcaster_id) {
+      broadcaster_id = await getBroadcasterTwitchId();
+    }
+    const response = await getSubscriptions(broadcaster_id);
+    return response.total;
+  } catch (err) {
+    const data = err.response && err.response.data ? err.response.data : {}
+    log.error('getSubscriberTotal', { message: err.message, data });
   }
-  const response = await getSubscriptions(broadcaster_id);
-  return response.total;
+  return 0;
 }
 
 const getSubscribers = async (broadcaster_id) => {
-  if (!broadcaster_id) {
-    broadcaster_id = await getBroadcasterTwitchId();
+  let data = null;
+  try {
+    if (!broadcaster_id) {
+      broadcaster_id = await getBroadcasterTwitchId();
+    }
+    let response = await getSubscriptions(broadcaster_id, null);
+    data = response.data;
+    while (response.pagination.cursor) {
+      response = await getSubscriptions(
+        broadcaster_id,
+        response.pagination.cursor,
+      );
+      data = [...data, ...response.data];
+    }
+    return data;
+  } catch (err) {
+    log.error('getSubscribers', { message: err.message, data });
   }
-  let response = await getSubscriptions(broadcaster_id, null);
-  let data = response.data;
-  while (response.pagination.cursor) {
-    response = await getSubscriptions(
-      broadcaster_id,
-      response.pagination.cursor,
-    );
-    data = [...data, ...response.data];
-  }
-  return data;
+
+  return null;
 }
 
 const getUserFollowers = async (
@@ -58,7 +71,7 @@ const getUserFollowers = async (
     return data;
   } catch (err) {
     const data = err.response && err.response.data ? err.response.data : {}
-    log.error('getUserFollowers', { message: err.message, data }, logPrefix);
+    log.error('getUserFollowers', { message: err.message, data });
   }
   return null;
 };
@@ -69,7 +82,7 @@ const getFollowersTotal = async () => {
     return response.total;
   } catch (err) {
     const data = err.response && err.response.data ? err.response.data : {}
-    log.error('getFollowersTotal', { message: err.message, data }, logPrefix);
+    log.error('getFollowersTotal', { message: err.message, data });
   }
   return 0;
 }
@@ -85,7 +98,7 @@ const getFollowers = async () => {
     return data;
   } catch (err) {
     const data = err.response && err.response.data ? err.response.data : err
-    log.error("getFollowers", { message: err.message, data }, logPrefix);
+    log.error("getFollowers", { message: err.message, data });
   }
   return [];
 };
@@ -105,7 +118,7 @@ const getUser = async (id) => {
     return data.length > 0 ? data[0] : null;
   } catch (err) {
     const data = err.response && err.response.data ? err.response.data : {}
-    log.error("getUser", { id, message: err.message, data }, logPrefix);
+    log.error("getUser", { id, message: err.message, data });
   }
 
   return null;

@@ -277,14 +277,20 @@ const createChatClient = async (wss) => {
       }
     }
   }
+
+  return true;
 };
 
 const reconnectChatClient = async () => {
-  if (client) {
-    await client.disconnect();
+  try {
+    if (client) {
+      await client.disconnect();
+    }
+    log.debug("Reconnecting");
+    return createChatClient();
+  } catch (err) {
+    log.error('reconnectChatClient', err)
   }
-  log.debug("Reconnecting");
-  return createChatClient();
 };
 
 const getChatClient = () => client;

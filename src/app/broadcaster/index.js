@@ -1,5 +1,7 @@
+const log = require('../log').withPrefix('Broadcaster')
 const { isNumeric } = require("../support");
-const { Chatters } = require("../models");
+const chalk = require('chalk');
+const { Chatters, Tokens, Sequelize } = require("../models");
 
 const PRIMARY_BROADCASTER = 1;
 const SECONDARY_BROADCASTER = 2;
@@ -38,7 +40,16 @@ const getBroadcasterOrNull = async () => {
 const getSecondaryBroadcaster = async () => {
   const Broadcaster = await Chatters.findOne({
     where: {
-      broadcaster: SECONDARY_BROADCASTER,
+      broadcaster: SECONDARY_BROADCASTER
+    },
+    include: {
+      model: Tokens,
+      as: 'tokens',
+      where: {
+        expires: {
+          [Sequelize.Op.gt]: Sequelize.fn('NOW')
+        }
+      }
     },
   });
   if (!Broadcaster) {
@@ -54,6 +65,7 @@ const getSecondaryBroadcasterOrNull = async () => {
   try {
     return await getSecondaryBroadcaster();
   } catch (err) {
+    log.error('getSecondaryBroadcasterOrNull', { err })
     return null;
   }
 }
