@@ -1,4 +1,3 @@
-const log = require('../log').withPrefix('Broadcaster')
 const { isNumeric } = require("../support");
 const chalk = require('chalk');
 const { Chatters, Tokens, Sequelize } = require("../models");
@@ -28,9 +27,8 @@ const getBroadcaster = async () => {
 const getBroadcasterOrNull = async () => {
   try {
     return await getBroadcaster();
-  } catch (err) {
-    return null;
-  }
+  } catch (err) { }
+  return null;
 }
 
 /**
@@ -64,10 +62,8 @@ const getSecondaryBroadcaster = async () => {
 const getSecondaryBroadcasterOrNull = async () => {
   try {
     return await getSecondaryBroadcaster();
-  } catch (err) {
-    log.error('getSecondaryBroadcasterOrNull', { err })
-    return null;
-  }
+  } catch (err) { }
+  return null;
 }
 
 /**
