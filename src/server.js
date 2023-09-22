@@ -1,6 +1,7 @@
 const { PORT, HOST } = require('./config.js');
 const { checkOrCreateDirectory } = require('./app/support/files');
 const { createWebSocketServer } = require('./app/websockets');
+const history = require('connect-history-api-fallback')
 const log = require('./app/log');
 const path = require('path');
 const express = require('express');
@@ -9,7 +10,14 @@ const app = express();
 
 console.clear();
 
-app.use(express.static(path.resolve('./public')));
+const staticFileMiddleware = express.static(path.resolve('./public'));
+app.use(staticFileMiddleware);
+app.use(history({
+  disableDotRule: true,
+  verbose: true
+}))
+app.use(staticFileMiddleware);
+
 checkOrCreateDirectory(path.resolve('./storage'));
 
 // parse requests of content-type - application/json
