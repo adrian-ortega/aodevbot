@@ -24,6 +24,6 @@ module.exports = ({ message, context, type, levels, timestamp, prefix }) => {
 
   console.log.call(null, line);
   if (DEBUG && context) {
-    console.log.call(null, { context });
+    console.log.call(null, context)
   }
 };
