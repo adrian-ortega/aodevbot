@@ -10,6 +10,7 @@ const commandsTransformer = (row) => {
   return {
     id: row.id,
     name,
+    type: row.type,
     enabled: row.enabled,
     formatted_name: name
       .replace(/([a-z])([A-Z])/g, "$1 $2")
@@ -21,6 +22,10 @@ const commandsTransformer = (row) => {
       .join(" "),
     aliases,
     description: row.description,
+    response: row.response,
+    options: row.options || {},
+    created_at: row.created_at.getTime(),
+    updated_at: row.updated_at.getTime()
   };
 };
 
@@ -54,7 +59,6 @@ exports.list = async (req, res) => {
   }
 
   data = await ChatCommands.findAndCountAll({ where, limit, offset });
-  console.log({ where, limit, offset });
   const rows = data.rows.map(commandsTransformer);
 
   updatePagination(data.count);
@@ -103,9 +107,9 @@ exports.create = async (req, res) => {
   res.send({ data: commandsTransformer(command) });
 };
 
-exports.update = async (req, res) => {};
+exports.update = async (req, res) => { };
 
-exports.destroy = async (req, res) => {};
+exports.destroy = async (req, res) => { };
 exports.listTemplates = async (req, res) => {
   res.send({
     data: [
