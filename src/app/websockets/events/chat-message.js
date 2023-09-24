@@ -7,6 +7,7 @@ const {
   USER_DISPLAY_NAME,
   USER_ID,
   USER_USERNAME,
+  USER_TMI_SENT_STAMP,
 } = require("../../twitch/chat/state-keys");
 const twitchCommands = require("../../twitch/chat/commands");
 const twitchEvents = require("../../twitch/chat/events");
@@ -27,6 +28,7 @@ const createTmiChatState = (Chatter, botChatter) => {
     [USER_COLOR]: Chatter.color || null,
     [USER_ROOM_ID]: botChatter.twitch_id,
     [USER_DISPLAY_NAME]: Chatter.display_name,
+    [USER_TMI_SENT_STAMP]: new Date().getTime()
   };
 };
 
