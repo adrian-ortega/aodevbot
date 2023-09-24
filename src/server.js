@@ -14,7 +14,10 @@ const staticFileMiddleware = express.static(path.resolve('./public'));
 app.use(staticFileMiddleware);
 app.use(history({
   disableDotRule: true,
-  verbose: true
+  rewrites: [{
+    from: /^\/api\/.*$/,
+    to: context => context.parsedUrl.path
+  }]
 }))
 app.use(staticFileMiddleware);
 
