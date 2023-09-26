@@ -51,7 +51,7 @@ exports.handle = async (
   resolve,
 ) => {
   const broadcast = require('../../../websockets').broadcastToClients
-  let [friend] = state[USER_MESSAGE_PARAMS];
+  const [friend] = state[USER_MESSAGE_PARAMS];
   let count, reply;
 
   if (!isEmpty(friend)) {
@@ -78,3 +78,16 @@ exports.handle = async (
     item_value: count.item_value + 1
   })
 };
+exports.options = () => {
+  return {
+    fields: [
+      {
+        id: 'responses',
+        type: 'alias-responses'
+      }
+    ],
+    field_values: {
+      responses: []
+    }
+  }
+}

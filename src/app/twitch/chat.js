@@ -227,7 +227,7 @@ const createChatClient = async (wss) => {
       },
       identity,
       channels: [identity.username],
-      logger: log,
+      logger: log.withPrefix('TMI'),
     });
     client.on("join", onJoin);
     client.on("message", onMessage);

@@ -46,7 +46,11 @@ const initCommands = (commands) => {
       name: names.join(","),
       description: getValue(command.description, ""),
       response: "",
-      options: getValue(command.options),
+      options: {
+        fields: [],
+        field_values: {},
+        ...getValue(command.options, {})
+      },
     };
     const exists = await ChatCommands.findOne({
       where: {
