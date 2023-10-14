@@ -7,7 +7,10 @@ const { initCommands } = require("./chat/commands/dictionary");
 const events = require("./chat/events");
 const initEvents = require("./chat/events/dictionary");
 
+const { getWebSocketServer } = require("../websockets");
 const { parseChatMessageHtml } = require("../websockets/helpers");
+const { ONE_SECOND } = require("../support/time");
+const { compareObjects } = require("../support");
 const { Chat, Chatters, Tokens } = require("../models");
 const { initPointsSync } = require("./chat/points");
 const { refreshAccessToken } = require("./auth");
@@ -28,8 +31,7 @@ const TMI_RECONNECT_RETRIES = 5;
 const TMI_SENT_STAMP = "tmi-sent-ts";
 
 const tmi = require("tmi.js");
-const { ONE_SECOND } = require("../support/time");
-const { compareObjects } = require("../support");
+
 let tmiConnected;
 let tmiConnectRetries = 0;
 
@@ -287,7 +289,21 @@ const reconnectChatClient = async () => {
       await client.disconnect();
     }
     log.debug("Reconnecting");
-    return createChatClient();
+    const wss = getWebSocketServer()
+    createChatClient(wss);
+    if (wss.clients && wss.clients.length > 0) {
+      wss.clients.forEach((ws) => {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(
+            JSON.stringify({
+              event: "account-details",
+              payload: {},
+            }),
+          );
+        }
+      });
+    }
+    return client;
   } catch (err) {
     log.error('reconnectChatClient', err)
   }
