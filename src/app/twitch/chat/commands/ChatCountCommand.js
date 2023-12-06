@@ -1,6 +1,7 @@
-const { Sequelize, Chat, Chatters } = require("../../../models");
+const { Sequelize, Chat, Chatters, ChatCommands } = require("../../../models");
 const { botMessageReply } = require("../commands");
 const { USER_ID, USER_DISPLAY_NAME } = require("../state-keys");
+const { options } = require("./HugCommand");
 
 exports.name = ["chat-count", "chatted", "chatcount", "chat count"];
 exports.handle = async (message, state, channel, { client }, resolve) => {
@@ -28,6 +29,19 @@ exports.handle = async (message, state, channel, { client }, resolve) => {
     chatMessage = `Oops! something went wrong, ${state[USER_DISPLAY_NAME]}. Please try again.`;
   }
 
+  const command = ChatCommands.findAll()
+
   client.say(channel, botMessageReply(chatMessage));
   resolve(chatMessage);
 };
+exports.options = () => {
+  return {
+    fields: [
+      
+    ],
+    tokens: ['count'],
+    field_values: {
+      
+    }
+  }
+}

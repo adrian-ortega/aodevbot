@@ -1,3 +1,6 @@
 {
-  "workbench.colorTheme": "Default Dark Modern"
+  "workbench.colorTheme": "GitHub Dark Default",
+  "cSpell.words": [
+    "chatcount"
+  ]
 }

@@ -30,26 +30,29 @@ const registeredCommands = [
 const initCommands = (commands) => {
   commands.clear();
   registeredCommands.forEach(async (command) => {
-    let names = getValue(command.name);
-    if (isString(names)) {
-      names = [
-        ...names
+    let cmdNames = getValue(command.name);
+    if (isString(cmdNames)) {
+      cmdNames = [
+        ...cmdNames
           .split(",")
           .map((s) => s.trim())
           .filter((a) => a)
           .values(),
       ];
     }
+    const cmdSettings = getValue(command.options, {});
+    const [name, ...aliases] = cmdNames;
     const cmd = {
       type: COMMAND_TYPES.custom,
       enabled: 0,
-      name: names.join(","),
+      name,
+      aliases,
       description: getValue(command.description, ""),
       response: "",
+      settings: { ...cmdSettings },
       options: {
-        fields: [],
-        field_values: {},
-        ...getValue(command.options, {})
+        aliases,
+        ...getValue(cmdSettings.field_values, {})
       },
     };
     const exists = await ChatCommands.findOne({

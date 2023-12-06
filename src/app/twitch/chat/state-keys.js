@@ -17,6 +17,12 @@ const USER_MESSAGE_PARAMS = "user-message-params";
 const USER_TMI_SENT_STAMP = 'tmi-sent-ts'
 const USER_MESSAGE_COMMAND = "user-message-command"
 
+const getPublicAccessibleKeysAndDescriptions = () => {
+  return {
+    name: 'Viewers name',
+  }
+}
+
 module.exports = {
   USER_BADGE_INFO,
   USER_BADGES,
@@ -35,5 +41,6 @@ module.exports = {
   USER_USERNAME,
   USER_MESSAGE_PARAMS,
   USER_MESSAGE_COMMAND,
-  USER_TMI_SENT_STAMP
+  USER_TMI_SENT_STAMP,
+  getPublicAccessibleKeysAndDescriptions
 };
