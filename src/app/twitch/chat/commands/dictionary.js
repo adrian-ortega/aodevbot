@@ -11,7 +11,8 @@ const COMMAND_TYPES = {
 
 const registeredCommands = [
   // Spotify Commands
-  // require("../../../spotify/chat/commands/SongRequestCommand"),
+  require("../../../spotify/chat/commands/SongNameCommand"),
+  require("../../../spotify/chat/commands/SongRequestCommand"),
 
   // General Commands
   require("./CheersCommand"),

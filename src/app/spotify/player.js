@@ -103,3 +103,17 @@ exports.skipToPrevious = async () => {
     // console.log(err)
   }
 }
+
+exports.addToQueue = async (uri) => {
+  try {
+    const { data } = await client.post('/me/player/queue', null, {
+      params: {
+        uri
+      }
+    })
+    return data;
+  } catch (err) {
+    // console.log(err.response.data)
+  }
+  return null;
+}
