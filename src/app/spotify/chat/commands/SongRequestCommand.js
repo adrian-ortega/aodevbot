@@ -21,6 +21,18 @@ const {
 } = require("./song-requests/helpers");
 
 exports.name = "sr";
+exports.description = `
+Will query Spotify (when linked) for song requests,
+then adds it to the queue when a user selects one
+from the returned results list
+`;
+
+exports.options = () => {
+  return {
+    fields: [],
+    field_values: {}
+  }
+}
 exports.handle = async (message, state, channel, { client }, resolve) => {
   if (isUnavailable()) {
     return client.say(

@@ -45,7 +45,7 @@ const extractCommand = (message) => {
 const extractCommandName = (cmd, includeAliases) => {
   let cmdName = getValue(cmd.name);
   if (isArray(cmdName)) {
-    const cmdNames = cmdName.map((a) => `!${a}`);
+    const cmdNames = cmdName.map((a) => a.trim());
     cmdName = `${cmdNames[0]}`;
     if (includeAliases) {
       cmdName += ` (Aliases: ${cmdNames.splice(1).join(", ")})`;
@@ -53,6 +53,8 @@ const extractCommandName = (cmd, includeAliases) => {
   }
   return cmdName;
 };
+
+exports.extractCommandName = extractCommandName;
 
 const getMatchedName = (message, cmd) => {
   const cmdName = getValue(cmd.name);

@@ -1,5 +1,5 @@
 const { ChatCommands, Sequelize } = require("../../models");
-const { objectHasProp } = require("../../support");
+const { isString, objectHasProp, getValue } = require("../../support");
 const { getPublicAccessibleKeysAndDescriptions } = require('../../twitch/chat/state-keys')
 const {
   COMMAND_TYPES,
@@ -207,5 +207,88 @@ exports.listTemplates = async (req, res) => {
         response: "Awe! {0} hugged {1}",
       },
     ],
+  });
+};
+
+exports.reset = async (req, res) => {
+  if (!req.params.id) {
+    return res.status(400).send({
+      error: true,
+      message: "Missing Content"
+    });
+  }
+
+  const { id } = req.params;
+  try {
+    const Command = await ChatCommands.findByPk(id);
+    if (!Command) {
+      return res.status(404).send({
+        error: true,
+        message: "Not found",
+      });
+    }
+
+    if(Command.type !== COMMAND_TYPES[COMMAND_TYPE_CUSTOM]) {
+      return res.status(422).send({
+        error: true,
+        message: "Incorrect Command Type",
+      });
+    }
+
+    const Twitch = require("../../twitch");
+    const TwitchCommands = Twitch.getCommands();
+    const { extractCommandName } = require("../../twitch/chat/commands")
+    let [command_name] = Command.name.split(",");
+    const TwitchCommand = TwitchCommands.find((cmd) => extractCommandName(cmd, false)  === command_name)
+
+    if(!TwitchCommand) {
+      return res.status(404).send({
+        error: true,
+        message: "Command file not found",
+      });
+    }
+
+    const cmdSettings = objectHasProp(TwitchCommand, 'settings') ? getValue(TwitchCommand.settings) : {};
+    let cmdNames = getValue(TwitchCommand.name);
+    if (isString(cmdNames)) {
+      cmdNames = [
+        ...cmdNames
+          .split(",")
+          .map((s) => s.trim())
+          .filter((a) => a)
+          .values(),
+      ];
+    }
+
+    const [name, ...aliases] = cmdNames;
+    const cmd = {
+      type: COMMAND_TYPES.custom,
+      enabled: !!Command.enabled,
+      name,
+      description: getValue(TwitchCommand.description, ""),
+      response: getValue(TwitchCommand.response, ""),
+      settings: { ...cmdSettings },
+      options: {
+        aliases,
+        ...getValue(cmdSettings.field_values, {})
+      },
+    };
+
+    const updateResponse = await Command.update(cmd)
+    return res.send({
+      TwitchCommand,
+      data: commandsTransformer(updateResponse)
+    });
+  } catch (err) {
+    console.log(err)
+    return res.status(500).send({
+      error: true,
+      message: err.message || "Something went wrong",
+      data: []
+    });
+  }
+
+  return res.status(200).send({
+    message: 'Success'
   });
 };

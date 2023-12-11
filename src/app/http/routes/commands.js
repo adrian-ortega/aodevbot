@@ -7,5 +7,6 @@ router.get("/templates", controller.listTemplates);
 router.get("/:id", controller.detail);
 router.patch("/:id", controller.update);
 router.delete("/:id", controller.destroy);
+router.post("/:id/reset", controller.reset);
 
 module.exports = router;
