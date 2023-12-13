@@ -99,7 +99,11 @@ exports.handle = async (message, state, channel, { client }, resolve) => {
 
   try {
     const Twitch = require("../../../twitch");
-    const [q, limit] = state[USER_MESSAGE_PARAMS];
+    let [q, limit] = state[USER_MESSAGE_PARAMS];
+    limit = parseInt(limit, 10);
+    if(limit > 8) limit = 8;
+    if(limit < 1) limit = 1;
+
     const results = await searchSpotifyTracks(q, limit);
     const timestamp = moment.unix();
     const stream_id = await Twitch.getStreamId();
