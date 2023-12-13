@@ -7,6 +7,11 @@ exports.name = () => {
 
 exports.description = 'Will return the name of the currently playing song, if any.';
 
+exports.examples = () => [{
+  example: '!song',
+  description: 'Does not take any arguments'
+}]
+
 exports.handle = async (message, state, channel, { client }, resolve) => {
   try {
     const username = state[USER_DISPLAY_NAME];

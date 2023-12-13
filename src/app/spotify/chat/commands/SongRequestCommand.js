@@ -25,14 +25,70 @@ exports.description = `
 Will query Spotify (when linked) for song requests,
 then adds it to the queue when a user selects one
 from the returned results list
-`;
+`.trim();
 
 exports.options = () => {
   return {
-    fields: [],
-    field_values: {}
+    fields: [
+      {
+        id: 'unavailable_template',
+        type: 'text',
+        label: 'Unavailable Template',
+        help: 'The message used to tell the user that the command is unavailable.',
+        tokens: ['0'],
+        token_descriptions: {
+          '0' : "The requester's username"
+        }
+      },
+      {
+        id: 'playlist_enable',
+        type: 'switch',
+        label: 'Stream Playlist',
+        help: 'Turn this on to save every song that has been successfully added to the queue, to a playlist on your Spotify Account',
+      },
+      {
+        id: 'playlist_name_template',
+        type: 'text',
+        label: 'Stream Playlist Name Template',
+        help: 'The name template used to save the Stream playlist to Spotify',
+      }
+    ],
+    field_values: {
+      unavailable_template: 'Sorry, @{0}, song requests are only available during a throwaway stream.',
+      playlist_enable: true,
+      playlist_name_template: '{display_name} Stream Song Requests {stream_id} {date}',
+      tokens: ['0'],
+      token_descriptions: {
+        '0' : "The requester's username"
+      }
+    }
   }
 }
+
+exports.stats = () => {
+  return [{
+    id: 'total_requests',
+    label: 'Total Requests',
+    value: 0,
+    unit: {
+      plural: 'Requests',
+      single: 'Request'
+    }
+  }]
+}
+
+exports.examples = () => {
+  return [{
+    example: `!sr <search keywords>
+!sr Michael Jackson`,
+    description: 'Use search keywords to find tracks.'
+  }, {
+    example: `!sr <search keywords> | <count (max 8, default 3)>
+!sr Michael Jackson | 5`,
+    description: 'A number can be passed as an argument to change the result set.'
+  }]
+}
+
 exports.handle = async (message, state, channel, { client }, resolve) => {
   if (isUnavailable()) {
     return client.say(

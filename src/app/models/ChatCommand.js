@@ -6,6 +6,7 @@ const ChatCommandModel = (sequelize, Sequelize) => {
     id: { type: INTEGER, primaryKey: true, autoIncrement: true },
     type: { type: INTEGER },
     enabled: { type: BOOLEAN },
+    count: { type: INTEGER, defaultValue: 0 },
     name: { type: STRING },
     description: { type: TEXT },
     response: { type: TEXT },

@@ -1,7 +1,7 @@
 exports.SR_STREAM_NONE_ID = "__none__";
 exports.SR_MESSAGES_UNAVAILABLE =
   "Sorry, @{0}, song requests are only available during a throwaway stream.";
-exports.SR_SONG_NOT_FOUND = "Which one would you like @{0}? Pick a number";
+exports.SR_SONG_NOT_FOUND = "I couldn't find anything with that search @{0}, would you like to try again?";
 exports.SR_PICK_A_RESULT = "Which one would you like @{0}? Pick a number";
 exports.SR_RESULT_LINE = '{0} "{1}" by {2} from "{3}"';
 exports.SR_RESULT_NONE = "{0} None, cancel";

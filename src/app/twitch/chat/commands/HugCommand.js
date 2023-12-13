@@ -42,7 +42,8 @@ const getRandomFriendReply = (state, friend, count) => randomFromArray([
 ].filter(a => a))
 
 exports.name = ["hug", "hugs", "abrazo"];
-exports.description = "Will reply with a hug comment";
+exports.description = "Will reply with a hug random, and cheeky, comment";
+exports.examples = () => [{ example: '!hug <user with or without @ symbol>'}, { example: '!hug @somethingwitty'}]
 exports.handle = async (
   message,
   state,

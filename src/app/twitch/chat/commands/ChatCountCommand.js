@@ -29,7 +29,7 @@ exports.handle = async (message, state, channel, { client }, resolve) => {
     chatMessage = `Oops! something went wrong, ${state[USER_DISPLAY_NAME]}. Please try again.`;
   }
 
-  const command = ChatCommands.findAll()
+  // const command = ChatCommands.findAll()
 
   client.say(channel, botMessageReply(chatMessage));
   resolve(chatMessage);

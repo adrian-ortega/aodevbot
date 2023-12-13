@@ -1,5 +1,5 @@
 const { ChatCommands, Sequelize } = require("../../models");
-const { isString, objectHasProp, getValue } = require("../../support");
+const { isString, objectHasProp, getValue, objectHasMethod } = require("../../support");
 const { getPublicAccessibleKeysAndDescriptions } = require('../../twitch/chat/state-keys')
 const {
   COMMAND_TYPES,
@@ -7,7 +7,15 @@ const {
   COMMAND_TYPE_GENERAL,
 } = require("../../twitch/chat/commands/dictionary");
 
-const commandsTransformer = (row) => {
+const getConcreteTwitchCommand = (Command) => {
+  const Twitch = require("../../twitch");
+    const TwitchCommands = Twitch.getCommands();
+    const { extractCommandName } = require("../../twitch/chat/commands")
+    const [command_name] = Command.name.split(",");
+    return TwitchCommands.find((cmd) => extractCommandName(cmd, false)  === command_name)
+}
+
+const commandsTransformer = (row, concreteCmd = null) => {
   let [name, ...aliases] = row.name.split(",");
   const defaultTokens = getPublicAccessibleKeysAndDescriptions()
   let options = {
@@ -39,6 +47,22 @@ const commandsTransformer = (row) => {
     options = {...options, ...row.options}
   }
 
+  let examples = []
+  let stats = [{
+    id: 'executed',
+    label: 'Executed',
+    value: row.count,
+    unit: {
+      plural: 'Times',
+      single: 'Time'
+    }
+  }];
+
+  if(concreteCmd) {
+    stats = [...stats, ...getValue(concreteCmd.stats, [])]
+    examples = [...getValue(concreteCmd.examples, [])]
+  }
+
   return {
     id: row.id,
     name,
@@ -56,6 +80,8 @@ const commandsTransformer = (row) => {
     description: row.description,
     response: row.response,
     options,
+    stats,
+    examples,
     created_at: row.created_at.getTime(),
     updated_at: row.updated_at.getTime()
   };
@@ -104,13 +130,15 @@ exports.list = async (req, res) => {
 exports.detail = async (req, res) => {
   const { id } = req.params;
   try {
-    const command = await ChatCommands.findByPk(id);
-    if (!command) {
+    const Command = await ChatCommands.findByPk(id);
+    if (!Command) {
       return res.status(404).send({
         message: "Not found",
       });
     }
-    res.send({ data: commandsTransformer(command) });
+
+    const TwitchCommand = getConcreteTwitchCommand(Command)
+    res.send({ data: commandsTransformer(Command, TwitchCommand) });
   } catch (err) {
     return res.status(500).send({
       message: err.message || "Something went wrong",
@@ -235,11 +263,7 @@ exports.reset = async (req, res) => {
       });
     }
 
-    const Twitch = require("../../twitch");
-    const TwitchCommands = Twitch.getCommands();
-    const { extractCommandName } = require("../../twitch/chat/commands")
-    let [command_name] = Command.name.split(",");
-    const TwitchCommand = TwitchCommands.find((cmd) => extractCommandName(cmd, false)  === command_name)
+    const TwitchCommand = getConcreteTwitchCommand(Command)
 
     if(!TwitchCommand) {
       return res.status(404).send({
@@ -248,7 +272,7 @@ exports.reset = async (req, res) => {
       });
     }
 
-    const cmdSettings = objectHasProp(TwitchCommand, 'settings') ? getValue(TwitchCommand.settings) : {};
+    const cmdSettings = objectHasProp(TwitchCommand, 'options') ? getValue(TwitchCommand.options) : {};
     let cmdNames = getValue(TwitchCommand.name);
     if (isString(cmdNames)) {
       cmdNames = [
@@ -276,8 +300,8 @@ exports.reset = async (req, res) => {
 
     const updateResponse = await Command.update(cmd)
     return res.send({
-      TwitchCommand,
-      data: commandsTransformer(updateResponse)
+      message: 'Successfully reset command',
+      data: commandsTransformer(updateResponse, TwitchCommand)
     });
   } catch (err) {
     console.log(err)
@@ -287,8 +311,4 @@ exports.reset = async (req, res) => {
       data: []
     });
   }
-
-  return res.status(200).send({
-    message: 'Success'
-  });
 };

@@ -52,8 +52,9 @@ exports.name = () =>
   );
 
 exports.description =
-  "Will reply CHEERS in the correct language to the user and keep count. ";
+  "Will reply CHEERS in the correct language to the user and keep count of the times the user has cheers-ed us.";
 
+exports.examples = () => [{ example: '!salud' }, { example: '!cheers' }]
 exports.handle = async (
   message,
   state,
