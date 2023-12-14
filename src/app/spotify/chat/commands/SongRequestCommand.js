@@ -5,6 +5,7 @@ const { stringFormat } = require("../../../support/strings");
 const {
   USER_DISPLAY_NAME,
   USER_MESSAGE_PARAMS,
+  getPublicAccessibleKeysAndDescriptions,
 } = require("../../../twitch/chat/state-keys");
 const {
   SR_MESSAGES_UNAVAILABLE,
@@ -31,13 +32,19 @@ exports.options = () => {
   return {
     fields: [
       {
+        id: 'aliases',
+        type: 'aliases',
+        label: 'Aliases',
+        help: 'All aliases use the same templates and responses.'
+      },
+      {
         id: 'unavailable_template',
         type: 'text',
         label: 'Unavailable Template',
         help: 'The message used to tell the user that the command is unavailable.',
         tokens: ['0'],
         token_descriptions: {
-          '0' : "The requester's username"
+          '0' : "The requester's username",
         }
       },
       {

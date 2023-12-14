@@ -56,17 +56,18 @@ const initCommands = (commands) => {
         ...getValue(cmdSettings.field_values, {})
       },
     };
-    const exists = await ChatCommands.findOne({
+    let existingChatCommand = await ChatCommands.findOne({
       where: {
         type: cmd.type,
         name: cmd.name,
       },
     });
-
-    if (!exists) {
-      await ChatCommands.create(cmd);
+    
+    if (!existingChatCommand) {
+      existingChatCommand = await ChatCommands.create(cmd);
     }
 
+    command.model = existingChatCommand;
     commands.append(command);
   });
 };

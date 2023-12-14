@@ -7,7 +7,7 @@ const {
   objectHasProp,
   objectHasMethod,
 } = require("../../support");
-const { USER_MESSAGE_PARAMS, USER_MESSAGE_COMMAND } = require("./state-keys");
+const { USER_MESSAGE_PARAMS, USER_MESSAGE_COMMAND, USER_MESSAGE_COMMAND_NAME } = require("./state-keys");
 
 let data = [];
 
@@ -23,7 +23,7 @@ const createGenericCommand = (command, message) => {
 };
 
 const startsWithBang = (str) => str.trim().match(/^!\w+/g);
-const extractCommand = (message) => {
+const getConcreteCommandFromMessage = (message) => {
   if (!startsWithBang(message)) return false;
   const set = data.find((cmd) => {
     // Messages must be followed by whitespace to be considered
@@ -42,7 +42,7 @@ const extractCommand = (message) => {
   });
   return set ?? false;
 };
-const extractCommandName = (cmd, includeAliases) => {
+const getConcreteCommandName = (cmd, includeAliases) => {
   let cmdName = getValue(cmd.name);
   if (isArray(cmdName)) {
     const cmdNames = cmdName.map((a) => a.trim());
@@ -54,7 +54,7 @@ const extractCommandName = (cmd, includeAliases) => {
   return cmdName;
 };
 
-exports.extractCommandName = extractCommandName;
+exports.getConcreteCommandName = getConcreteCommandName;
 
 const getMatchedName = (message, cmd) => {
   const cmdName = getValue(cmd.name);
@@ -87,18 +87,19 @@ const getMessageParams = (message, cmd) => {
 };
 
 exports.botMessageReply = (message) => `🤖 ${message}`;
-
+exports.replyWithContext = (template, context = {}) => Object.keys(context).reduce((acc, key) => acc.replaceAll(`{${key}}`, context[key]), template)
 exports.maybeRun = (channel, state, message, chatClient) => {
-  const cmd = extractCommand(message);
+  const cmd = getConcreteCommandFromMessage(message);
   if (cmd === false) return false;
 
-  const cmdName = extractCommandName(cmd, true);
+  const cmdName = getConcreteCommandName(cmd, true);
   const cmdCallback = (response = null) => {
     log.debug(`${cmdName} Complete.`, { response }, logPrefix);
   };
 
   state[USER_MESSAGE_PARAMS] = getMessageParams(message, cmd);
-  state[USER_MESSAGE_COMMAND] = getMatchedName(message, cmd)
+  state[USER_MESSAGE_COMMAND_NAME] = getMatchedName(message, cmd);
+  state[USER_MESSAGE_COMMAND] = cmd.model;
 
   cmd.handle(message, state, channel, chatClient, cmdCallback);
   return true;

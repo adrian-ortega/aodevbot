@@ -2,7 +2,7 @@ const { KeyValue } = require('../../../models');
 const { randomFromArray } = require('../../../support');
 const { stringFormat } = require('../../../support/strings');
 const { botMessageReply } = require('../commands');
-const { USER_ID, USER_MESSAGE_COMMAND, USER_DISPLAY_NAME } = require('../state-keys');
+const { USER_ID, USER_MESSAGE_COMMAND_NAME, USER_DISPLAY_NAME } = require('../state-keys');
 
 const getUserStats = async (twitch_id) => {
   const item_key = `cmd_cheers_count_${twitch_id}`
@@ -63,7 +63,7 @@ exports.handle = async (
   resolve,
 ) => {
   const count = await getUserStats(state[USER_ID]);
-  const repo = CHEER_REPLIES.find(o => o.names.includes(state[USER_MESSAGE_COMMAND]))
+  const repo = CHEER_REPLIES.find(o => o.names.includes(state[USER_MESSAGE_COMMAND_NAME]))
   const reply = stringFormat(randomFromArray(repo.replies), [
     state[USER_DISPLAY_NAME],
     count.item_value

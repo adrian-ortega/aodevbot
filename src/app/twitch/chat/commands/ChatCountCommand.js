@@ -1,7 +1,6 @@
 const { Sequelize, Chat, Chatters, ChatCommands } = require("../../../models");
 const { botMessageReply } = require("../commands");
 const { USER_ID, USER_DISPLAY_NAME } = require("../state-keys");
-const { options } = require("./HugCommand");
 
 exports.name = ["chat-count", "chatted", "chatcount", "chat count"];
 exports.handle = async (message, state, channel, { client }, resolve) => {

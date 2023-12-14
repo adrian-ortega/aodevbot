@@ -10,9 +10,9 @@ const {
 const getConcreteTwitchCommand = (Command) => {
   const Twitch = require("../../twitch");
     const TwitchCommands = Twitch.getCommands();
-    const { extractCommandName } = require("../../twitch/chat/commands")
+    const { getConcreteCommandName } = require("../../twitch/chat/commands")
     const [command_name] = Command.name.split(",");
-    return TwitchCommands.find((cmd) => extractCommandName(cmd, false)  === command_name)
+    return TwitchCommands.find((cmd) => getConcreteCommandName(cmd, false)  === command_name)
 }
 
 const commandsTransformer = (row, concreteCmd = null) => {
@@ -30,11 +30,11 @@ const commandsTransformer = (row, concreteCmd = null) => {
   }
 
   if(objectHasProp(row.settings, 'tokens')) {
-    options.tokens = [...options.tokens, row.settings.tokens];
+    options.tokens = [...options.tokens, ...row.settings.tokens];
   }
 
   if(objectHasProp(row.settings, 'token_descriptions')) {
-    options.token_descriptions = [...options.token_descriptions, row.settings.token_descriptions];
+    options.token_descriptions = {...options.token_descriptions, ...row.settings.token_descriptions};
   }
 
   if(objectHasProp(row.settings, 'fields')) {
@@ -61,6 +61,18 @@ const commandsTransformer = (row, concreteCmd = null) => {
   if(concreteCmd) {
     stats = [...stats, ...getValue(concreteCmd.stats, [])]
     examples = [...getValue(concreteCmd.examples, [])]
+
+    // @TODO Is this necessary?
+    //
+    // const concreteCmdOptions = getValue(concreteCmd.options, {})
+    // if(concreteCmdOptions.fields) {
+    //   console.log({ optionFields: options.fields, concreteFields: concreteCmdOptions.fields})
+    //   options.fields = [...options.fields, ...concreteCmdOptions.fields]
+    // }
+
+    // if(concreteCmdOptions.field_values) {
+    //   options.field_values = {...options.field_values, ...concreteCmdOptions.field_values}
+    // }
   }
 
   return {
@@ -80,6 +92,11 @@ const commandsTransformer = (row, concreteCmd = null) => {
     description: row.description,
     response: row.response,
     options,
+
+    // @TODO this is not implemented anywhere, not in the model or logic. But it exists
+    // in the front end, so it's only here as a reminder
+    permission: 0,
+
     stats,
     examples,
     created_at: row.created_at.getTime(),
@@ -189,24 +206,18 @@ exports.update = async (req, res) => {
 
     const commandData = {
       enabled: req.body.enabled,
-      options: req.body.options,
+      permission: req.body.permission,
+      response: req.body.response,
+      options: Object.keys(req.body.options).reduce((acc, key) => {
+        acc[key] = req.body.options[key];
+        return acc;
+      }, {...command.options}),
     };
-
-    if(objectHasProp(req.body, 'aliases')) {
-      commandData.options.aliases = req.body.aliases
-    }
-
-    if(objectHasProp(req.body, 'response')) {
-      commandData.response = req.body.response;
-    }
-
-    if(objectHasProp(req.body, 'permission')) {
-      commandData.permission = req.body.permission;
-    }
 
     if(command.type === COMMAND_TYPES[COMMAND_TYPE_GENERAL]) {
       commandData.name = req.body.name;
       commandData.description = req.body.description;
+      commandData.response = req.body.response;
     } else {
       // Custom functionality
     }
