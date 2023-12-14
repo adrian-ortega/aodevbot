@@ -61,18 +61,11 @@ const commandsTransformer = (row, concreteCmd = null) => {
   if(concreteCmd) {
     stats = [...stats, ...getValue(concreteCmd.stats, [])]
     examples = [...getValue(concreteCmd.examples, [])]
+  }
 
-    // @TODO Is this necessary?
-    //
-    // const concreteCmdOptions = getValue(concreteCmd.options, {})
-    // if(concreteCmdOptions.fields) {
-    //   console.log({ optionFields: options.fields, concreteFields: concreteCmdOptions.fields})
-    //   options.fields = [...options.fields, ...concreteCmdOptions.fields]
-    // }
-
-    // if(concreteCmdOptions.field_values) {
-    //   options.field_values = {...options.field_values, ...concreteCmdOptions.field_values}
-    // }
+  let permission = 0;
+  if(objectHasProp(row.options, 'permission')) {
+    permission = row.options.permission;
   }
 
   return {
@@ -92,11 +85,7 @@ const commandsTransformer = (row, concreteCmd = null) => {
     description: row.description,
     response: row.response,
     options,
-
-    // @TODO this is not implemented anywhere, not in the model or logic. But it exists
-    // in the front end, so it's only here as a reminder
-    permission: 0,
-
+    permission,
     stats,
     examples,
     created_at: row.created_at.getTime(),
@@ -163,27 +152,42 @@ exports.detail = async (req, res) => {
   }
 };
 
-// @TODO: This is horrible. VVV Redo this function
-//
 exports.create = async (req, res) => {
-  if (!req.body.name || !req.body.response) {
-    return res.status(400).send({
-      message: "Missing Content",
+  try {
+    if (!req.body.name || !req.body.response) {
+      return res.status(400).send({
+        message: "Missing Content",
+      });
+    }
+  
+    const options = objectHasProp(req.body, 'options') ? req.body.options : {};
+    options.permission = objectHasProp(req.body, 'permission') ? req.body.permission : 0;
+    if(objectHasProp(req.body, 'aliases')) {
+      options.aliases = req.body.aliases;
+    }
+  
+    const command = await ChatCommands.create({
+      type: COMMAND_TYPES[COMMAND_TYPE_GENERAL],
+      name: req.body.name,
+      enabled: !!req.body.enabled,
+      count: 0,
+      description: req.body.description ?? '',
+      response: req.body.response ?? '' ,
+      settings: {},
+      options: Object.keys(options).reduce((acc, key) => {
+        acc[key] = options[key];
+        return acc;
+      }, {...options}),
+    });
+  
+    return res.send({ data: commandsTransformer(command) });
+  } catch (err) {
+    return res.status(500).send({
+      error: true,
+      message: err.message || "Something went wrong",
+      data: []
     });
   }
-
-  const command = await ChatCommands.create({
-    type: COMMAND_TYPES[COMMAND_TYPE_GENERAL],
-    enabled: 0,
-    name: req.body.name,
-    response: req.body.response,
-    options: {
-      count: 0,
-      permission: req.body.permission || 1,
-    },
-  });
-
-  res.send({ data: commandsTransformer(command) });
 };
 
 exports.update = async (req, res) => {
@@ -237,7 +241,29 @@ exports.update = async (req, res) => {
   }
 };
 
-exports.destroy = async (req, res) => { };
+exports.destroy = async (req, res) => {
+  const { id } = req.params;
+  ChatCommands.destroy({
+    where: { id },
+  })
+    .then((num) => {
+      if (num === 1) {
+        res.send({
+          message: "Command was deleted successfully!",
+        });
+      } else {
+        res.send({
+          message: `Cannot delete Command with id=${id}.`,
+        });
+      }
+    })
+    .catch((err) => {
+      res.status(500).send({
+        message: err.message || "Something went wrong",
+      });
+    });
+};
+
 exports.listTemplates = async (req, res) => {
   res.send({
     data: [
