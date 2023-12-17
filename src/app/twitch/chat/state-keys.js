@@ -20,7 +20,8 @@ const USER_MESSAGE_COMMAND_NAME = "user-message-command-name"
 
 const getPublicAccessibleKeysAndDescriptions = () => {
   return {
-    name: 'Viewers name',
+    name: `Viewer's name`,
+    broadcaster_name: `Broadcaster's aName`
   }
 }
 

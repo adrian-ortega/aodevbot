@@ -5,7 +5,6 @@ const { stringFormat } = require("../../../support/strings");
 const {
   USER_DISPLAY_NAME,
   USER_MESSAGE_PARAMS,
-  getPublicAccessibleKeysAndDescriptions,
 } = require("../../../twitch/chat/state-keys");
 const {
   SR_MESSAGES_UNAVAILABLE,

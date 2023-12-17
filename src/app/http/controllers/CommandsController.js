@@ -208,12 +208,18 @@ exports.update = async (req, res) => {
       });
     }
 
+    const options = objectHasProp(req.body, 'options') ? req.body.options : {};
+    options.permission = objectHasProp(req.body, 'permission') ? req.body.permission : 0;
+    if(objectHasProp(req.body, 'aliases')) {
+      options.aliases = req.body.aliases;
+    }
+
     const commandData = {
       enabled: req.body.enabled,
       permission: req.body.permission,
       response: req.body.response,
-      options: Object.keys(req.body.options).reduce((acc, key) => {
-        acc[key] = req.body.options[key];
+      options: Object.keys(options).reduce((acc, key) => {
+        acc[key] = options[key];
         return acc;
       }, {...command.options}),
     };

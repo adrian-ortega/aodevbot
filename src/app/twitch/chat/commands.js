@@ -1,4 +1,6 @@
+const { getBroadcaster } = require("../../broadcaster");
 const log = require("../../log");
+const { ChatCommands, Sequelize } = require("../../models");
 const logPrefix = "Twitch Cmds";
 const {
   getValue,
@@ -6,42 +8,63 @@ const {
   isArray,
   objectHasProp,
   objectHasMethod,
+  isEmpty,
 } = require("../../support");
-const { USER_MESSAGE_PARAMS, USER_MESSAGE_COMMAND, USER_MESSAGE_COMMAND_NAME } = require("./state-keys");
+const { create: createGenericCommand } = require("./commands/GenericCommand");
+const { USER_MESSAGE_PARAMS, USER_MESSAGE_COMMAND, USER_MESSAGE_COMMAND_NAME, USER_DISPLAY_NAME } = require("./state-keys");
 
 let data = [];
 
 const validate = (cmd) =>
   objectHasProp(cmd, "name") && objectHasMethod(cmd, "handle");
-const createGenericCommand = (command, message) => {
-  return {
-    name: command,
-    handle() {
-      console.log(message);
-    },
-  };
-};
-
 const startsWithBang = (str) => str.trim().match(/^!\w+/g);
-const getConcreteCommandFromMessage = (message) => {
+const getCommandNameRegEx = (cmdName) => new RegExp(`^!${cmdName}\\b`, "i");
+const getConcreteCommandFromMessage = async (message) => {
   if (!startsWithBang(message)) return false;
   const set = data.find((cmd) => {
     // Messages must be followed by whitespace to be considered
     // a proper command
     //
     const name = getValue(cmd.name);
-    const cmdRegEx = (cmdName) => new RegExp(`^!${cmdName}\\b`, "i");
     if (isArray(name)) {
       for (let i = 0; i < name.length; i++) {
-        if (message.trim().match(cmdRegEx(name[i]))) {
+        if (message.trim().match(getCommandNameRegEx(name[i]))) {
           return true;
         }
       }
     }
-    return message.trim().match(cmdRegEx(name));
+    return message.trim().match(getCommandNameRegEx(name));
   });
-  return set ?? false;
+
+  // Found a concrete command class
+  //
+  if(set) return set;
+
+  // Look for the command in db
+  //
+  const [_message, _cmd, _cmdArgs] = message.trim().match(/^!(\w+)(?:\s+(.*))?/)
+    if(!isEmpty(_cmd)) {
+      const Command = await ChatCommands.findOne({
+        where: {
+          [Sequelize.Op.or]: {
+            name: {
+              [Sequelize.Op.like]: `%${_cmd}`
+            },
+            'options.aliases': {
+              [Sequelize.Op.like]: `%"${_cmd}"%`
+            }
+          }
+        }
+      })
+
+      if(Command) {
+        return createGenericCommand(Command)
+      }
+    }
+
+  return false;
 };
+
 const getConcreteCommandName = (cmd, includeAliases) => {
   let cmdName = getValue(cmd.name);
   if (isArray(cmdName)) {
@@ -88,8 +111,8 @@ const getMessageParams = (message, cmd) => {
 
 exports.botMessageReply = (message) => `🤖 ${message}`;
 exports.replyWithContext = (template, context = {}) => Object.keys(context).reduce((acc, key) => acc.replaceAll(`{${key}}`, context[key]), template)
-exports.maybeRun = (channel, state, message, chatClient) => {
-  const cmd = getConcreteCommandFromMessage(message);
+exports.maybeRun = async (channel, state, message, chatClient) => {
+  const cmd = await getConcreteCommandFromMessage(message);
   if (cmd === false) return false;
 
   const cmdName = getConcreteCommandName(cmd, true);
@@ -101,13 +124,20 @@ exports.maybeRun = (channel, state, message, chatClient) => {
   state[USER_MESSAGE_COMMAND_NAME] = getMatchedName(message, cmd);
   state[USER_MESSAGE_COMMAND] = cmd.model;
 
+  // @TODO Make this dynamic
+  //
+  const broadcaster = await getBroadcaster()
+  state['name'] = state[USER_DISPLAY_NAME];
+  state['broadcaster_name'] = broadcaster.display_name;
+
   cmd.handle(message, state, channel, chatClient, cmdCallback);
   return true;
 };
 
 exports.append = (command, message = null) => {
   if (isString(command)) {
-    command = createGenericCommand(command, message);
+    console.log('STRING COMMANDS NOT IMPLEMENTED');
+    return;
   }
 
   if (!validate(command)) {

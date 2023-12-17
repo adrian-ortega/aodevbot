@@ -1,14 +1,45 @@
 const { getBroadcaster, isBroadcaster } = require("../../../broadcaster");
-const { isNumeric } = require("../../../support");
+const { isNumeric, isString } = require("../../../support");
 const { getTimeDifferenceForHumans } = require("../../../support/time");
 const { getUserFollows } = require("../../follows");
 const { getUser } = require("../../users");
 const { botMessageReply } = require("../commands");
 const { USER_ID, USER_MESSAGE_PARAMS } = require("../state-keys");
 
-exports.name = ["followage", "fa"];
+exports.name = () => ["followage", "fa"];
 
-exports.description = "Displays how long the suer has been following";
+exports.description = "Displays how long the user has been following";
+
+exports.examples = () => ([{
+  example: '!followage',
+  description: 'The default usage will return the requesters follow-age.'
+}, {
+  description: 'The broadcaster can pass a twitch id or twitch username to check the follow-age.',
+  example: `!followage <twitch_id|twitch_username>
+!followage @mnmmia
+`
+}])
+
+exports.options = () => {
+  let cmdName = exports.name()
+  if(isString(cmdName)) cmdName = cmdName.split(',').map(a => a.trim())
+  const [,...aliases] = cmdName
+  const cmdTokens = {
+    followed_at: 'The follow date.',
+    followed_at_formatted: 'The human readable date when the requested user followed the broadcaster.',
+    follow_length: 'Human readable follow length.'
+  }
+  return {
+    fields: [
+      { id: 'response', type: 'text', label: 'Response', help: 'Use the provided tokens to create the response template.', tokens: Object.keys(cmdTokens), token_descriptions: cmdTokens },
+      { id: 'aliases', type: 'aliases', label: 'Aliases' },
+    ],
+    field_values: {
+      response: '@{name} has been following @{broadcaster_name} since {followed_at_formatted}. They\'ve been following for {follow_length}',
+      aliases
+    }
+  }
+}
 
 exports.handle = async (
   message,

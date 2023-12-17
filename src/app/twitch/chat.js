@@ -181,7 +181,7 @@ const onMessage = async (channel, state, message, self) => {
       events,
     };
 
-    if (!commands.maybeRun(channel, state, message, chatClient)) {
+    if (!(await commands.maybeRun(channel, state, message, chatClient))) {
       // @TODO implement events
       events.maybeRun(channel, state, message, chatClient);
     }
