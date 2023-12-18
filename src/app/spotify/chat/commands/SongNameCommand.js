@@ -57,7 +57,9 @@ exports.handle = async (message, state, channel, { client }, resolve) => {
     const icon = savedTracks.length && savedTracks[0]
       ? randomFromArray(likedIcons)
       : randomFromArray(defaultIcons);
-    client.say(channel, botMessageReply(replyWithContext(cmd.options.response, { song, artist, icon, ...stateContext })));
+    const chatMessage = botMessageReply(replyWithContext(cmd.options.response, { song, artist, icon, ...stateContext }))
+    client.say(channel, chatMessage);
+    resolve(chatMessage);
   } catch (err) {
     
   }

@@ -1,10 +1,10 @@
 const { getBroadcaster, isBroadcaster } = require("../../../broadcaster");
 const { isNumeric, isString } = require("../../../support");
 const { getTimeDifferenceForHumans } = require("../../../support/time");
-const { getUserFollows } = require("../../follows");
-const { getUser } = require("../../users");
-const { botMessageReply } = require("../commands");
-const { USER_ID, USER_MESSAGE_PARAMS } = require("../state-keys");
+const { getFollowedChannels } = require("../../follows");
+const { getUser, getUserFollowers } = require("../../users");
+const { botMessageReply, replyWithContext } = require("../commands");
+const { USER_ID, USER_MESSAGE_PARAMS, USER_ROOM_ID, USER_MESSAGE_COMMAND } = require("../state-keys");
 
 exports.name = () => ["followage", "fa"];
 
@@ -48,15 +48,17 @@ exports.handle = async (
   { client, commands },
   resolve,
 ) => {
-  let twitch_id = state[USER_ID];
-  let chatMessage;
   const broadcaster = await getBroadcaster();
   const broadcaster_name = broadcaster.display_name;
+  const {[USER_MESSAGE_COMMAND]: cmd, ...stateContext } = state;
+  let twitch_id = state[USER_ID];
+  let chatMessage, chatContext = { ...stateContext };
 
   if (isBroadcaster(twitch_id)) {
     const params = state[USER_MESSAGE_PARAMS];
     if (params[0] && params[0].length) {
-      twitch_id = params[0].replace("@", "");
+      const twitch_user = await getUser(params[0].replace("@", ""));
+      twitch_id = twitch_user.id
     } else {
       return client.say(
         channel,
@@ -67,16 +69,9 @@ exports.handle = async (
     }
   }
 
-  const twitch_user = await getUser(twitch_id);
-  const twitch_username = twitch_user.display_name;
-
-  if (!isNumeric(twitch_id)) {
-    twitch_id = parseInt(twitch_user.id, 10);
-  }
-
-  const { data } = await getUserFollows(twitch_id, 1);
+  const { data } = await getUserFollowers(1, null, twitch_id);
   if (!data || data.length === 0) {
-    chatMessage = `Hmmm, It looks like that follower doesn't exist or they don't follow @${broadcaster_name}`;
+    chatMessage = `Hmmm, It looks like that follower doesn't exist or they don't follow {broadcaster_name}`;
   } else {
     const followed_at = new Date(data[0].followed_at);
     const followed_at_formatted = followed_at.toLocaleDateString("en-us", {
@@ -86,11 +81,16 @@ exports.handle = async (
       day: "numeric",
     });
     const follow_length = getTimeDifferenceForHumans(followed_at, new Date());
-
-    chatMessage = `@${twitch_username} has been following @${broadcaster_name} since ${followed_at_formatted}. They've been following for ${follow_length}`;
+    chatContext = {
+      broadcaster_name,
+      followed_at,
+      followed_at_formatted,
+      follow_length,
+      ...stateContext
+    }
+    chatMessage = cmd.options.response;
   }
 
-  client.say(channel, botMessageReply(chatMessage));
-
-  return resolve(chatMessage);
+  client.say(channel, botMessageReply(replyWithContext(chatMessage, chatContext)));
+  resolve(chatMessage);
 };

@@ -80,6 +80,7 @@ exports.getAuthURL = (redirect_uri, type = 0) => {
   if (type === PRIMARY_BROADCASTER) {
     scopes.push("bits:read");
     scopes.push("moderator:read:chatters");
+    scopes.push("moderator:read:followers");
     scopes.push("analytics:read:games");
     scopes.push("channel:read:subscriptions");
     scopes.push("channel:read:hype_train");

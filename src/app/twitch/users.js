@@ -128,6 +128,7 @@ module.exports = {
   getUser,
   getFollowers,
   getFollowersTotal,
+  getUserFollowers,
   getSubscribers,
   getSubscriberTotal,
 };
