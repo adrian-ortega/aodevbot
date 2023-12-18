@@ -40,7 +40,7 @@ class GenericCommand {
     const { replyWithContext } = require("../commands");
     const response = this.getResponseTemplate()
     const {[USER_MESSAGE_COMMAND]: cmd, ...stateContext } = state;
-    console.log(stateContext)
+
     if(response) client.say(channel, replyWithContext(response, stateContext))
   }
 

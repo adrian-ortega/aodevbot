@@ -12,7 +12,8 @@ exports.getCurrentlyPlaying = async () => {
 
     return data;
   } catch (err) {
-    console.log(err.status)
+    console.log('// @TODO make this less annoying.')
+    console.log(err)
     if (err.status !== 401) {
       log.error('getCurrentlyPlaying', {
         message: err.message,
