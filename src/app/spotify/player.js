@@ -12,9 +12,10 @@ exports.getCurrentlyPlaying = async () => {
 
     return data;
   } catch (err) {
-    console.log('// @TODO make this less annoying.')
-    console.log(err)
-    if (err.status !== 401) {
+    const { response } = err;
+
+    // Missing code for access_token
+    if (response && response.status !== 401) {
       log.error('getCurrentlyPlaying', {
         message: err.message,
         data: err.response && err.response.data ? err.response.data : {}
