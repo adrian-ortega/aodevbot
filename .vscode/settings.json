@@ -6,6 +6,8 @@
     "Leaderboard",
     "Shoutout",
     "Unlurk",
-    "websockets"
+    "websockets",
+    "chat count",
+    "chatcount"
   ]
 }
