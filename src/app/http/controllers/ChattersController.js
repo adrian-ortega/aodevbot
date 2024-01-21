@@ -1,4 +1,5 @@
-const { Chatters, Sequelize } = require("../../models");
+const { Chatters, Sequelize, KeyValue } = require("../../models");
+const { updateOrCreateKeyValue } = require("../../support/models")
 
 const chattersTraformer = (row) => {
   return {
@@ -137,13 +138,41 @@ exports.destroy = (req, res) => {
     });
 };
 
+const SYNC_STATUS_KEY = 'chatters_sync_current'
+const SYNC_TOTAL_KEY = 'chatters_sync_total'
+
+exports.syncStatus = async (req, res) => {
+  const syncTotal = await KeyValue.findOne({ where: { item_key: SYNC_TOTAL_KEY } })
+  const syncStatus = await KeyValue.findOne({
+    where: { item_key: SYNC_STATUS_KEY }
+  });
+
+  res.send({
+    total: syncTotal.item_value,
+    status: syncStatus.item_value,
+  })
+}
+
 exports.sync = async (req, res) => {
   const Twitch = require("../../twitch");
   const chatters = await Twitch.getFollowers()
-  console.log(`Found ${chatters.length} Chatters`)
   const syncData = []
 
-  console.log('Pulling data from Twitch')
+  await updateOrCreateKeyValue({
+    item_key: SYNC_TOTAL_KEY,
+    item_value: chatters.length
+  }, {
+    item_key: SYNC_TOTAL_KEY,
+  });
+
+  const syncStatus = await updateOrCreateKeyValue({
+    item_key: SYNC_STATUS_KEY,
+    item_value: 0
+  }, {
+    item_key: SYNC_STATUS_KEY,
+  });
+  let item_value = 0;
+  await syncStatus.update({ item_value })
   for (let i = 0; i < chatters.length; i++) {
     const item = await Twitch.getUser(chatters[i].from_id);
     syncData.push({
@@ -152,9 +181,9 @@ exports.sync = async (req, res) => {
       display_name: item.display_name,
       profile_image_url: item.profile_image_url
     })
+    item_value++;
+    await syncStatus.update({ item_value })
   }
-
-  console.log('Attempting Bulk Create')
 
   const results = await Chatters.bulkCreate(syncData, {
     fields: ['twitch_id', 'username', 'display_name', 'profile_image_url'],

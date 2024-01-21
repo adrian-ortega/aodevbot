@@ -1,4 +1,5 @@
 const log = require("../log");
+const logPrefix = 'Twitch Auth'
 const config = require("../../config");
 const client = require("axios");
 const moment = require("moment");
@@ -33,7 +34,7 @@ exports.refreshAccessToken = async () => {
   } catch (err) {
     log.error("refreshAccessToken", {
       message: err.message,
-    });
+    }, logPrefix);
   }
   return false;
 };
@@ -56,9 +57,10 @@ exports.getAuthTokenFromCode = async (code, redirect_uri) => {
       return false;
     }
 
-    log.error("error getAuthTokenFromCode", {
-      message: err.message,
-    });
+
+    if (response) {
+      log.error("getAuthTokenFromCode", response.data, logPrefix);
+    }
   }
 
   return null;
