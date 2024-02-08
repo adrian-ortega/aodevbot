@@ -109,3 +109,15 @@ exports.createWebSocketServer = (expressServer) => {
 
   return webSocketServer;
 };
+
+exports.isBusy = (type = 'server', id = null) => {
+  webSocketServer.emit('busy', {
+    type, id
+  })
+}
+
+exports.notBusy = (type = 'server', id = null) => {
+  webSocketServer.emit('not-busy', {
+    type, id
+  });
+}
