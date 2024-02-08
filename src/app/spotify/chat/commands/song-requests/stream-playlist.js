@@ -29,12 +29,13 @@ const getStreamPlaylist = async (stream_id = null) => {
     }
 
     // create it
-    return createPlaylist(currentUser.id, {
+    const playlist = await createPlaylist(currentUser.id, {
       name: streamPlaylistName,
       description: `Automatically created by AODEVBOT on ${moment().format(`L`)}`,
       private: true,
       collaborative: false,
     });
+    return playlist;
   } catch (err) {
     console.log('checkStreamPlaylist', err);
   }
@@ -49,9 +50,11 @@ const getStreamPlaylist = async (stream_id = null) => {
 const addTrackToStreamPlaylist = async (SongRequest, stream_id = null) => {
   try {
     const playlist = await getStreamPlaylist(stream_id)
-    return addItemToPlaylist(playlist.id, SongRequest.track_uri);
+    if(playlist) {
+      return addItemToPlaylist(playlist.id, SongRequest.track_uri);
+    }
   } catch (err) {
-    console.log('addTrackToStreamPlaylist', err)
+    // console.log('addTrackToStreamPlaylist', err)
   }
   return null;
 }

@@ -83,6 +83,7 @@ exports.getAuthURL = (redirect_uri) => {
     "user-modify-playback-state",
     "user-read-currently-playing",
     "user-library-read",
+    "playlist-modify-public",
     "playlist-modify-private",
   ];
   const url = new URL("https://accounts.spotify.com/authorize");
