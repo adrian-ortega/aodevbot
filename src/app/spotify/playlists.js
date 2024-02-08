@@ -14,7 +14,7 @@ const createPlaylist = async (user_id, {
     })
     return data;
   } catch (err) {
-    
+    console.log(err)
   }
 }
 
