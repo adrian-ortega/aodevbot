@@ -24,7 +24,7 @@ exports.loadAccessToken = async (chatter_id) => {
       currentToken = token;
     }
   } catch (err) {
-    log.error("loadAccessToken", { message: err.message }, logPrefix);
+    // log.error("loadAccessToken", { message: err.message }, logPrefix);
   }
 
   return currentToken;

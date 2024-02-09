@@ -1,15 +1,77 @@
 const { ChatCommands, Sequelize } = require("../../models");
-const { objectHasProp } = require("../../support");
+const { isString, objectHasProp, getValue, objectHasMethod } = require("../../support");
+const { getPublicAccessibleKeysAndDescriptions } = require('../../twitch/chat/state-keys')
 const {
   COMMAND_TYPES,
+  COMMAND_TYPE_CUSTOM,
   COMMAND_TYPE_GENERAL,
 } = require("../../twitch/chat/commands/dictionary");
 
-const commandsTransformer = (row) => {
-  const [name, ...aliases] = row.name.split(",");
+const getConcreteTwitchCommand = (Command) => {
+  const Twitch = require("../../twitch");
+    const TwitchCommands = Twitch.getCommands();
+    const { getConcreteCommandName } = require("../../twitch/chat/commands")
+    const [command_name] = Command.name.split(",");
+    return TwitchCommands.find((cmd) => getConcreteCommandName(cmd, false)  === command_name)
+}
+
+const commandsTransformer = (row, concreteCmd = null) => {
+  let [name, ...aliases] = row.name.split(",");
+  const defaultTokens = getPublicAccessibleKeysAndDescriptions()
+  let options = {
+    tokens: Object.keys(defaultTokens),
+    token_descriptions: {...defaultTokens}
+  };
+
+  // @TODO this can be removed, check for usages of names split by a column.
+  if(objectHasProp(row.options, 'aliases')) {
+    aliases = row.options.aliases;
+    delete row.options.aliases;
+  }
+
+  if(objectHasProp(row.settings, 'tokens')) {
+    options.tokens = [...options.tokens, ...row.settings.tokens];
+  }
+
+  if(objectHasProp(row.settings, 'token_descriptions')) {
+    options.token_descriptions = {...options.token_descriptions, ...row.settings.token_descriptions};
+  }
+
+  if(objectHasProp(row.settings, 'fields')) {
+    options.fields = [...row.settings.fields];
+    options.field_values = {
+      ...(row.settings.field_values||{}),
+      ...row.options
+    }
+  } else {
+    options = {...options, ...row.options}
+  }
+
+  let examples = []
+  let stats = [{
+    id: 'executed',
+    label: 'Executed',
+    value: row.count,
+    unit: {
+      plural: 'Times',
+      single: 'Time'
+    }
+  }];
+
+  if(concreteCmd) {
+    stats = [...stats, ...getValue(concreteCmd.stats, [])]
+    examples = [...getValue(concreteCmd.examples, [])]
+  }
+
+  let permission = 0;
+  if(objectHasProp(row.options, 'permission')) {
+    permission = row.options.permission;
+  }
+
   return {
     id: row.id,
     name,
+    type: row.type,
     enabled: row.enabled,
     formatted_name: name
       .replace(/([a-z])([A-Z])/g, "$1 $2")
@@ -21,6 +83,13 @@ const commandsTransformer = (row) => {
       .join(" "),
     aliases,
     description: row.description,
+    response: row.response,
+    options,
+    permission,
+    stats,
+    examples,
+    created_at: row.created_at.getTime(),
+    updated_at: row.updated_at.getTime()
   };
 };
 
@@ -54,7 +123,6 @@ exports.list = async (req, res) => {
   }
 
   data = await ChatCommands.findAndCountAll({ where, limit, offset });
-  console.log({ where, limit, offset });
   const rows = data.rows.map(commandsTransformer);
 
   updatePagination(data.count);
@@ -68,13 +136,15 @@ exports.list = async (req, res) => {
 exports.detail = async (req, res) => {
   const { id } = req.params;
   try {
-    const command = await ChatCommands.findByPk(id);
-    if (!command) {
+    const Command = await ChatCommands.findByPk(id);
+    if (!Command) {
       return res.status(404).send({
         message: "Not found",
       });
     }
-    res.send({ data: commandsTransformer(command) });
+
+    const TwitchCommand = getConcreteTwitchCommand(Command)
+    res.send({ data: commandsTransformer(Command, TwitchCommand) });
   } catch (err) {
     return res.status(500).send({
       message: err.message || "Something went wrong",
@@ -83,29 +153,123 @@ exports.detail = async (req, res) => {
 };
 
 exports.create = async (req, res) => {
-  if (!req.body.name || !req.body.response) {
+  try {
+    if (!req.body.name || !req.body.response) {
+      return res.status(400).send({
+        message: "Missing Content",
+      });
+    }
+  
+    const options = objectHasProp(req.body, 'options') ? req.body.options : {};
+    options.permission = objectHasProp(req.body, 'permission') ? req.body.permission : 0;
+    if(objectHasProp(req.body, 'aliases')) {
+      options.aliases = req.body.aliases;
+    }
+  
+    const command = await ChatCommands.create({
+      type: COMMAND_TYPES[COMMAND_TYPE_GENERAL],
+      name: req.body.name,
+      enabled: !!req.body.enabled,
+      count: 0,
+      description: req.body.description ?? '',
+      response: req.body.response ?? '' ,
+      settings: {},
+      options: Object.keys(options).reduce((acc, key) => {
+        acc[key] = options[key];
+        return acc;
+      }, {...options}),
+    });
+  
+    return res.send({ data: commandsTransformer(command) });
+  } catch (err) {
+    return res.status(500).send({
+      error: true,
+      message: err.message || "Something went wrong",
+      data: []
+    });
+  }
+};
+
+exports.update = async (req, res) => {
+  if (!req.params.id) {
     return res.status(400).send({
-      message: "Missing Content",
+      error: true,
+      message: "Missing Content"
     });
   }
 
-  const command = await ChatCommands.create({
-    type: COMMAND_TYPES[COMMAND_TYPE_GENERAL],
-    enabled: 0,
-    name: req.body.name,
-    response: req.body.response,
-    options: {
-      count: 0,
-      permission: req.body.permission || 1,
-    },
-  });
+  const { id } = req.params;
+  try {
+    const command = await ChatCommands.findByPk(id);
+    if (!command) {
+      return res.status(404).send({
+        error: true,
+        message: "Not found",
+      });
+    }
 
-  res.send({ data: commandsTransformer(command) });
+    const options = objectHasProp(req.body, 'options') ? req.body.options : {};
+    options.permission = objectHasProp(req.body, 'permission') ? req.body.permission : 0;
+    if(objectHasProp(req.body, 'aliases')) {
+      options.aliases = req.body.aliases;
+    }
+
+    const commandData = {
+      enabled: req.body.enabled,
+      permission: req.body.permission,
+      response: req.body.response,
+      options: Object.keys(options).reduce((acc, key) => {
+        acc[key] = options[key];
+        return acc;
+      }, {...command.options}),
+    };
+
+    if(command.type === COMMAND_TYPES[COMMAND_TYPE_GENERAL]) {
+      commandData.name = req.body.name;
+      commandData.description = req.body.description;
+      commandData.response = req.body.response;
+    } else {
+      // Custom functionality
+    }
+
+    const updateResponse = await command.update(commandData);
+    res.send({ 
+      message: `Successfully updated Command #${id}`,
+      error: false, 
+      data: commandsTransformer(updateResponse)
+    });
+  } catch (err) {
+    return res.status(500).send({
+      error: true,
+      message: err.message || "Something went wrong",
+      data: []
+    });
+  }
 };
 
-exports.update = async (req, res) => {};
+exports.destroy = async (req, res) => {
+  const { id } = req.params;
+  ChatCommands.destroy({
+    where: { id },
+  })
+    .then((num) => {
+      if (num === 1) {
+        res.send({
+          message: "Command was deleted successfully!",
+        });
+      } else {
+        res.send({
+          message: `Cannot delete Command with id=${id}.`,
+        });
+      }
+    })
+    .catch((err) => {
+      res.status(500).send({
+        message: err.message || "Something went wrong",
+      });
+    });
+};
 
-exports.destroy = async (req, res) => {};
 exports.listTemplates = async (req, res) => {
   res.send({
     data: [
@@ -115,4 +279,79 @@ exports.listTemplates = async (req, res) => {
       },
     ],
   });
+};
+
+exports.reset = async (req, res) => {
+  if (!req.params.id) {
+    return res.status(400).send({
+      error: true,
+      message: "Missing Content"
+    });
+  }
+
+  const { id } = req.params;
+  try {
+    const Command = await ChatCommands.findByPk(id);
+    if (!Command) {
+      return res.status(404).send({
+        error: true,
+        message: "Not found",
+      });
+    }
+
+    if(Command.type !== COMMAND_TYPES[COMMAND_TYPE_CUSTOM]) {
+      return res.status(422).send({
+        error: true,
+        message: "Incorrect Command Type",
+      });
+    }
+
+    const TwitchCommand = getConcreteTwitchCommand(Command)
+
+    if(!TwitchCommand) {
+      return res.status(404).send({
+        error: true,
+        message: "Command file not found",
+      });
+    }
+
+    const cmdSettings = objectHasProp(TwitchCommand, 'options') ? getValue(TwitchCommand.options) : {};
+    let cmdNames = getValue(TwitchCommand.name);
+    if (isString(cmdNames)) {
+      cmdNames = [
+        ...cmdNames
+          .split(",")
+          .map((s) => s.trim())
+          .filter((a) => a)
+          .values(),
+      ];
+    }
+
+    const [name, ...aliases] = cmdNames;
+    const cmd = {
+      type: COMMAND_TYPES.custom,
+      enabled: !!Command.enabled,
+      name,
+      description: getValue(TwitchCommand.description, ""),
+      response: getValue(TwitchCommand.response, ""),
+      settings: { ...cmdSettings },
+      options: {
+        aliases,
+        ...getValue(cmdSettings.field_values, {})
+      },
+    };
+
+    const updateResponse = await Command.update(cmd)
+    return res.send({
+      message: 'Successfully reset command',
+      data: commandsTransformer(updateResponse, TwitchCommand)
+    });
+  } catch (err) {
+    console.log(err)
+    return res.status(500).send({
+      error: true,
+      message: err.message || "Something went wrong",
+      data: []
+    });
+  }
 };

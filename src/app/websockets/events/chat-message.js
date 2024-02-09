@@ -81,9 +81,16 @@ const createTmiClientSpoof = function (ws, state) {
           eventCallbackCache[eventCallbackId] = (ogMessage) => {
             const data = JSON.parse(ogMessage);
             if (!data.event) return;
-            getBroadcaster().then((broadcaster) => {
-              callback(broadcaster.username, {}, data.payload.message);
-            });
+            getBroadcaster().then((broadcasterChatter) => Chatters.findOne({
+              where: {
+                twitch_id: data.payload.twitch_id
+              }
+            }).then((Chatter) => {
+              const channel = broadcasterChatter.username;
+              const state = createTmiChatState(Chatter, broadcasterChatter);
+              const message = data.payload.message;
+              callback(channel, state, message);
+            }))
           };
           ws.on("message", eventCallbackCache[eventCallbackId].bind(this));
       }

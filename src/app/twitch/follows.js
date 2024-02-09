@@ -3,39 +3,32 @@ const logPrefix = "Twitch Follows";
 const client = require("./client");
 const { getBroadcasterTwitchId } = require("../broadcaster");
 
-const getUserFollows = async (
-  from_id,
-  first = 100,
-  after = null,
-  isBroadcaster = false,
+const getFollowedChannels = async (
+  user_id,
+  broadcaster_id = undefined,
+  first = undefined,
+  after = undefined
 ) => {
   try {
-    let to_id = await getBroadcasterTwitchId();
-    if (from_id === to_id) {
-      to_id = null;
-    }
-
-    if (isBroadcaster) {
-      to_id = from_id;
-      from_id = null;
-    }
-
-    const params = { from_id, first, to_id, after };
-    const { data: responseData } = await client.get("/helix/users/follows", {
-      params,
-    });
-    return responseData;
+    const { data } = await client.get('/helix/channels/followed', {
+      params: {
+        user_id,
+        broadcaster_id,
+        first,
+        after
+      }
+    })
+    return data;
   } catch (err) {
     log.error(
       "Error",
-      {
-        message: err.message,
-      },
+      err.response.data,
       logPrefix,
     );
+    return null;
   }
 };
 
 module.exports = {
-  getUserFollows,
+  getFollowedChannels,
 };

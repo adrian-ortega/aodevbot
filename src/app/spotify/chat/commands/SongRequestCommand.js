@@ -1,8 +1,7 @@
 const log = require("../../../log");
 const Spotify = require("../../../spotify");
 const moment = require("moment");
-const { stringFormat, EMOJI_NUMBERS } = require("../../../support/strings");
-const { botMessageReply } = require("../../../twitch/chat/commands");
+const { stringFormat } = require("../../../support/strings");
 const {
   USER_DISPLAY_NAME,
   USER_MESSAGE_PARAMS,
@@ -10,65 +9,94 @@ const {
 const {
   SR_MESSAGES_UNAVAILABLE,
   SR_SONG_NOT_FOUND,
-  SR_PICK_A_RESULT,
-  SR_RESULT_LINE,
-  SR_RESULT_NONE,
   SR_TIMEOUT,
 } = require("../locale");
 const { ONE_MINUTE } = require("../../../support/time");
 
-// @TODO Implement this
-const isUnavailble = () => false;
-
-const getTracks = async (q, limit) => {
-  const searchLimit = limit ? parseInt(limit, 10) : 3;
-  const results = await Spotify.search(q, searchLimit);
-  return results && results.tracks ? results.tracks.items : [];
-};
-
-const saySelectOptions = (channel, results, client, context) => {
-  // Song results found, time to reply
-  client.say(channel, botMessageReply(stringFormat(SR_PICK_A_RESULT, context)));
-
-  // Display each search result in a line reply
-  for (let i = 0; i < results.length; i++) {
-    const item = results[i];
-    client.say(
-      channel,
-      stringFormat(SR_RESULT_LINE, [
-        EMOJI_NUMBERS[i + 1], // Line no
-        item.name, // Title
-        item.artists[0].name, // Artist
-        item.album.name, // Album
-      ]),
-    );
-  }
-
-  // Add the Cancel Line
-  client.say(
-    channel,
-    stringFormat(SR_RESULT_NONE, [EMOJI_NUMBERS[results.length + 1]]),
-  );
-};
-
-const createSelectCallback = (
-  requester,
-  timestamp,
-  cachedRequest,
-  client,
-  reset,
-) => {
-  return (message, state, channel) => {
-    // if (requester !== state[USER_DISPLAY_NAME]) return;
-
-    const lastRequests = cachedRequest.data;
-    console.log({ lastRequests, message, state, channel, timestamp });
-  };
-};
+const createSelectCallback = require("./song-requests/select-track-callback");
+const {
+  isUnavailable,
+  searchSpotifyTracks,
+  saySelectOptions,
+} = require("./song-requests/helpers");
 
 exports.name = "sr";
+exports.description = `
+Will query Spotify (when linked) for song requests,
+then adds it to the queue when a user selects one
+from the returned results list
+`.trim();
+
+exports.options = () => {
+  return {
+    fields: [
+      {
+        id: 'aliases',
+        type: 'aliases',
+        label: 'Aliases',
+        help: 'All aliases use the same templates and responses.'
+      },
+      {
+        id: 'unavailable_template',
+        type: 'text',
+        label: 'Unavailable Template',
+        help: 'The message used to tell the user that the command is unavailable.',
+        tokens: ['0'],
+        token_descriptions: {
+          '0' : "The requester's username",
+        }
+      },
+      {
+        id: 'playlist_enable',
+        type: 'switch',
+        label: 'Stream Playlist',
+        help: 'Turn this on to save every song that has been successfully added to the queue, to a playlist on your Spotify Account',
+      },
+      {
+        id: 'playlist_name_template',
+        type: 'text',
+        label: 'Stream Playlist Name Template',
+        help: 'The name template used to save the Stream playlist to Spotify',
+      }
+    ],
+    field_values: {
+      unavailable_template: 'Sorry, @{0}, song requests are only available during a throwaway stream.',
+      playlist_enable: true,
+      playlist_name_template: '{display_name} Stream Song Requests {stream_id} {date}',
+      tokens: ['0'],
+      token_descriptions: {
+        '0' : "The requester's username"
+      }
+    }
+  }
+}
+
+exports.stats = () => {
+  return [{
+    id: 'total_requests',
+    label: 'Total Requests',
+    value: 0,
+    unit: {
+      plural: 'Requests',
+      single: 'Request'
+    }
+  }]
+}
+
+exports.examples = () => {
+  return [{
+    example: `!sr <search keywords>
+!sr Michael Jackson`,
+    description: 'Use search keywords to find tracks.'
+  }, {
+    example: `!sr <search keywords> | <count (max 8, default 3)>
+!sr Michael Jackson | 5`,
+    description: 'A number can be passed as an argument to change the result set.'
+  }]
+}
+
 exports.handle = async (message, state, channel, { client }, resolve) => {
-  if (isUnavailble()) {
+  if (isUnavailable()) {
     return client.say(
       channel,
       stringFormat(SR_MESSAGES_UNAVAILABLE, [state[USER_DISPLAY_NAME]]),
@@ -76,9 +104,15 @@ exports.handle = async (message, state, channel, { client }, resolve) => {
   }
 
   try {
-    const [q, limit] = state[USER_MESSAGE_PARAMS];
-    const results = await getTracks(q, limit);
+    const Twitch = require("../../../twitch");
+    let [q, limit] = state[USER_MESSAGE_PARAMS];
+    limit = parseInt(limit, 10);
+    if(limit > 8) limit = 8;
+    if(limit < 1) limit = 1;
+
+    const results = await searchSpotifyTracks(q, limit);
     const timestamp = moment.unix();
+    const stream_id = await Twitch.getStreamId();
 
     const cachedId = Spotify.cache.findByKey(
       "requester",
@@ -93,7 +127,7 @@ exports.handle = async (message, state, channel, { client }, resolve) => {
         results,
         selected: null,
         complete: false,
-        sreamId: null,
+        stream_id,
       },
     );
     const messageContext = [state[USER_DISPLAY_NAME]];

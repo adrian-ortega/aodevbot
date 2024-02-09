@@ -11,7 +11,8 @@ const COMMAND_TYPES = {
 
 const registeredCommands = [
   // Spotify Commands
-  // require("../../../spotify/chat/commands/SongRequestCommand"),
+  require("../../../spotify/chat/commands/SongNameCommand"),
+  require("../../../spotify/chat/commands/SongRequestCommand"),
 
   // General Commands
   require("./CheersCommand"),
@@ -30,35 +31,43 @@ const registeredCommands = [
 const initCommands = (commands) => {
   commands.clear();
   registeredCommands.forEach(async (command) => {
-    let names = getValue(command.name);
-    if (isString(names)) {
-      names = [
-        ...names
+    let cmdNames = getValue(command.name);
+    if (isString(cmdNames)) {
+      cmdNames = [
+        ...cmdNames
           .split(",")
           .map((s) => s.trim())
           .filter((a) => a)
           .values(),
       ];
     }
+    const cmdSettings = getValue(command.options, {});
+    const [name, ...aliases] = cmdNames;
     const cmd = {
       type: COMMAND_TYPES.custom,
       enabled: 0,
-      name: names.join(","),
+      name,
+      aliases,
       description: getValue(command.description, ""),
       response: "",
-      options: getValue(command.options),
+      settings: { ...cmdSettings },
+      options: {
+        aliases,
+        ...getValue(cmdSettings.field_values, {})
+      },
     };
-    const exists = await ChatCommands.findOne({
+    let existingChatCommand = await ChatCommands.findOne({
       where: {
         type: cmd.type,
         name: cmd.name,
       },
     });
-
-    if (!exists) {
-      await ChatCommands.create(cmd);
+    
+    if (!existingChatCommand) {
+      existingChatCommand = await ChatCommands.create(cmd);
     }
 
+    command.model = existingChatCommand;
     commands.append(command);
   });
 };

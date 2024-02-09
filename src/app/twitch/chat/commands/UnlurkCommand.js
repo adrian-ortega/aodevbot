@@ -95,3 +95,12 @@ exports.handle = async (message, state, channel, { client }, resolve) => {
   client.say(channel, botMessageReply(chatMessage));
   return chatMessage;
 };
+
+exports.examples = () => {
+  return [
+    {
+      example: '!unlurk',
+      description: 'No special bells and whistles, just run it'
+    }
+  ]
+}

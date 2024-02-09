@@ -4,15 +4,12 @@ const { getBroadcasterTwitchId } = require('../broadcaster')
 module.exports = async function () {
   const data = [];
   const broadcaster_id = await getBroadcasterTwitchId()
+  const notBroadcaster = (a) => parseInt(a.user_id, 10) !== parseInt(broadcaster_id, 10)
   const twitch = require('../twitch');
   const followers = await twitch.getFollowers();
   if (followers.length > 0) {
-    const follower = await twitch.getUser(
-      randomFromArray(
-        followers.filter(f => f.user_id !== broadcaster_id)
-      ).from_id
-    )
-
+    const random_follower = randomFromArray(followers.filter(notBroadcaster))
+    const follower = await twitch.getUser(random_follower.user_id)
     data.push({
       title: '<strong>so!</strong> to follower',
       value: follower.display_name,
@@ -22,7 +19,8 @@ module.exports = async function () {
 
   const subscribers = await twitch.getSubscribers()
   if (subscribers && subscribers.length > 0) {
-    const subscriber = await twitch.getUser(randomFromArray(subscribers).user_id)
+    const random_subscriber = randomFromArray(subscribers.filter(notBroadcaster))
+    const subscriber = await twitch.getUser(random_subscriber.user_id)
     data.push({
       title: '<strong>so!</strong> to subscriber',
       value: subscriber.display_name,

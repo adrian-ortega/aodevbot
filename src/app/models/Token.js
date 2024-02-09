@@ -7,7 +7,7 @@ const TokenModel = (sequelize, Sequelize) => {
     refresh_token: { type: TEXT },
     token_type: { type: STRING },
     expires: { type: DATE },
-    scope: { type: STRING },
+    scope: { type: TEXT },
   });
 
   Token.Chatter = Token.belongsTo(Chatter, {

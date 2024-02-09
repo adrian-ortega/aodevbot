@@ -42,7 +42,8 @@ const getRandomFriendReply = (state, friend, count) => randomFromArray([
 ].filter(a => a))
 
 exports.name = ["hug", "hugs", "abrazo"];
-exports.description = "Will reply with a hug comment";
+exports.description = "Will reply with a hug random, and cheeky, comment";
+exports.examples = () => [{ example: '!hug <user with or without @ symbol>'}, { example: '!hug @somethingwitty'}]
 exports.handle = async (
   message,
   state,
@@ -51,7 +52,7 @@ exports.handle = async (
   resolve,
 ) => {
   const broadcast = require('../../../websockets').broadcastToClients
-  let [friend] = state[USER_MESSAGE_PARAMS];
+  const [friend] = state[USER_MESSAGE_PARAMS];
   let count, reply;
 
   if (!isEmpty(friend)) {
@@ -78,3 +79,16 @@ exports.handle = async (
     item_value: count.item_value + 1
   })
 };
+exports.options = () => {
+  return {
+    fields: [
+      {
+        id: 'responses',
+        type: 'alias-responses'
+      }
+    ],
+    field_values: {
+      responses: []
+    }
+  }
+}

@@ -1,3 +1,13 @@
 {
-  "workbench.colorTheme": "Ayu Dark Bordered"
+  "workbench.colorTheme": "Ayu Dark Bordered",
+  "cSpell.words": [
+    "AODEV",
+    "Followage",
+    "Leaderboard",
+    "Shoutout",
+    "Unlurk",
+    "websockets",
+    "chat count",
+    "chatcount"
+  ]
 }

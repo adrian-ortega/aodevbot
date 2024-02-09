@@ -12,8 +12,10 @@ exports.getCurrentlyPlaying = async () => {
 
     return data;
   } catch (err) {
-    console.log(err.status)
-    if (err.status !== 401) {
+    const { response } = err;
+
+    // Missing code for access_token
+    if (response && response.status !== 401) {
       log.error('getCurrentlyPlaying', {
         message: err.message,
         data: err.response && err.response.data ? err.response.data : {}
@@ -102,4 +104,18 @@ exports.skipToPrevious = async () => {
   } catch (err) {
     // console.log(err)
   }
+}
+
+exports.addToQueue = async (uri) => {
+  try {
+    const { data } = await client.post('/me/player/queue', null, {
+      params: {
+        uri
+      }
+    })
+    return data;
+  } catch (err) {
+    // console.log(err.response.data)
+  }
+  return null;
 }

@@ -54,6 +54,7 @@ const shuffleArray = (array, size) => {
 };
 
 const arrayWrap = (array) => {
+  if(isEmpty(array)) return [];
   if (isString(array) || isObject(array)) return [array]
   return [...array]
 }
