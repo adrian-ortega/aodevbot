@@ -38,8 +38,6 @@ exports.refreshAccessToken = async (chatter_id) => {
   } catch (err) {
     log.error("refreshAccessToken", {
       message: err.message,
-      chatter_id,
-      data: err.response && err.response.data ? err.response.data : {}
     }, logPrefix);
   }
   return false;
@@ -63,10 +61,10 @@ exports.getAuthTokenFromCode = async (code, redirect_uri) => {
       return false;
     }
 
-    log.error("error getAuthTokenFromCode", {
-      message: err.message,
-      data: err.response && err.response.data ? err.response.data : {}
-    }, logPrefix);
+
+    if (response) {
+      log.error("getAuthTokenFromCode", response.data, logPrefix);
+    }
   }
 
   return null;

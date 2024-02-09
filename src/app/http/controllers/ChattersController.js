@@ -1,4 +1,5 @@
-const { Chatters, KeyValue, Sequelize } = require("../../models");
+const { Chatters, Sequelize, KeyValue } = require("../../models");
+const { updateOrCreateKeyValue } = require("../../support/models")
 
 const chattersTraformer = (row) => {
   return {
@@ -147,33 +148,21 @@ exports.destroy = (req, res) => {
     });
 };
 
-const getCurrentSyncStats = async (total = null) => {
-  const [model] = await KeyValue.findOrCreate({
-    where: {
-      item_key: 'chatters_sync'
-    },
-    defaults: {
-      item_key: 'chatters_sync',
-      item_value: {
-        total,
-        current: 0,
-        percentage: 0
-      }
-    }
+const SYNC_STATUS_KEY = 'chatters_sync_current'
+const SYNC_TOTAL_KEY = 'chatters_sync_total'
+
+exports.syncStatus = async (req, res) => {
+  const syncTotal = await KeyValue.findOne({ where: { item_key: SYNC_TOTAL_KEY } })
+  const syncStatus = await KeyValue.findOne({
+    where: { item_key: SYNC_STATUS_KEY }
   });
 
-  if (total !== null) {
-    model.update({
-      item_value: {
-        total,
-        current: 0,
-        percentage: 0
-      }
-    })
-  }
-
-  return model;
+  res.send({
+    total: syncTotal.item_value,
+    status: syncStatus.item_value,
+  })
 }
+
 exports.sync = async (req, res) => {
   const Twitch = require("../../twitch");
   let syncTotal = 1;
@@ -189,6 +178,21 @@ exports.sync = async (req, res) => {
   const syncData = []
   syncTotal = chatters.length
 
+  await updateOrCreateKeyValue({
+    item_key: SYNC_TOTAL_KEY,
+    item_value: chatters.length
+  }, {
+    item_key: SYNC_TOTAL_KEY,
+  });
+
+  const syncStatus = await updateOrCreateKeyValue({
+    item_key: SYNC_STATUS_KEY,
+    item_value: 0
+  }, {
+    item_key: SYNC_STATUS_KEY,
+  });
+  let item_value = 0;
+  await syncStatus.update({ item_value })
   for (let i = 0; i < chatters.length; i++) {
     const item = await Twitch.getUser(chatters[i].from_id);
     syncData.push({
@@ -197,7 +201,8 @@ exports.sync = async (req, res) => {
       display_name: item.display_name,
       profile_image_url: item.profile_image_url
     })
-    await statUpdate(i + 1, 100 * (i / syncTotal))
+    item_value++;
+    await syncStatus.update({ item_value })
   }
 
   const results = await Chatters.bulkCreate(syncData, {

@@ -31,9 +31,12 @@ const responseRefreshTokenInterceptor = async function (err) {
   if (err.response && err.response.status === 401 && !ogConfig._retry) {
     ogConfig._retry = true;
     try {
-      const { access_token, expires_in, scope } = await refreshAccessToken(
+      const refreshResponse = await refreshAccessToken(
         tokens.getRefreshToken(),
       );
+
+      if (!refreshResponse) throw new Error("Couldn't refresh token")
+
       const Broadcaster = await getBroadcaster();
       const SpotifyToken = await Tokens.findOne({
         where: {
@@ -45,15 +48,15 @@ const responseRefreshTokenInterceptor = async function (err) {
       if (!SpotifyToken) throw new Error("No Spotify Token found");
 
       SpotifyToken.update({
-        access_token,
-        expires: moment().add(expires_in, "seconds"),
-        scope,
+        access_token: refreshResponse.access_token,
+        expires: moment().add(refreshResponse.expires_in, "seconds"),
+        scope: refreshAccessToken.scope,
       });
 
-      instance.defaults.headers.Authorization = `Bearer ${access_token}`;
+      instance.defaults.headers.Authorization = `Bearer ${refreshAccessToken.access_token}`;
       return instance(ogConfig);
     } catch (_err) {
-      // console.log(_err);
+      log.error('responseRefreshTokenInterceptor', { error: _err.message }, logPrefix)
     }
   }
   const data = err.response ? err.response.data : {}
