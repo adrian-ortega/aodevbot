@@ -163,6 +163,34 @@ exports.syncStatus = async (req, res) => {
   })
 }
 
+const getCurrentSyncStats = async (total = null) => {
+  const [model] = await KeyValue.findOrCreate({
+    where: {
+      item_key: 'chatters_sync'
+    },
+    defaults: {
+      item_key: 'chatters_sync',
+      item_value: {
+        total,
+        current: 0,
+        percentage: 0
+      }
+    }
+  });
+
+  if (total !== null) {
+    model.update({
+      item_value: {
+        total,
+        current: 0,
+        percentage: 0
+      }
+    })
+  }
+
+  return model;
+}
+
 exports.sync = async (req, res) => {
   const Twitch = require("../../twitch");
   let syncTotal = 1;
