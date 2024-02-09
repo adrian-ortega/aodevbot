@@ -1,6 +1,7 @@
 const { PORT, HOST } = require('./config.js');
 const { checkOrCreateDirectory } = require('./app/support/files');
 const { createWebSocketServer } = require('./app/websockets');
+const chalk = require('chalk');
 const history = require('connect-history-api-fallback')
 const log = require('./app/log');
 const path = require('path');
@@ -39,8 +40,8 @@ db.sequelize.sync({
 
 const twitch = require('./app/twitch');
 const server = app.listen(PORT, () => {
-  log.debug('AODEVBot is up and running', null, 'Server');
-  log.info(`http://${HOST}:${PORT}`, null, 'Server');
+  log.debug(`${chalk.yellow('AODEVBot')} is up and running`, null, 'Server');
+  log.info(chalk.blueBright(`http://${HOST}:${PORT}`), null, 'Server');
 });
 
 twitch.createChatClient(
