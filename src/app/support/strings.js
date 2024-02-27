@@ -124,9 +124,18 @@ const pregMatchAll = (regex, str) => {
 const stringFormat = (str, context) =>
   str.replace(/\{(\d+)\}/g, (m, n) => context[n] || m);
 
+const isValidURL = (str) => {
+  try {
+    return Boolean(new URL(str));
+  } catch (err) {
+    return false;
+  }
+}
+
 module.exports = {
   EMOJI_NUMBERS,
   pregMatchAll,
   plural,
   stringFormat,
+  isValidURL
 };

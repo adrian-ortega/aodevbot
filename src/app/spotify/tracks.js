@@ -3,25 +3,33 @@ const logPrefix = "Spotify Tracks";
 const client = require("./client");
 const { arrayWrap } = require("../support");
 
-exports.validateTrackIDs = (ids) => {
-  const isValid = (id) => {
-    if (
-      // Spotify Track IDs are 22-character alphanumeric strings
-      id.length !== 22
+const isValidTrackId = (id) => {
+  if (
+    // Spotify Track IDs are 22-character alphanumeric strings
+    id.length !== 22
 
-      // Check if the string contains only alphanumeric characters
-      || !/^[a-zA-Z0-9]+$/.test(id)
+    // Check if the string contains only alphanumeric characters
+    || !/^[a-zA-Z0-9]+$/.test(id)
 
-      // // Check if the string starts with "spotify:track:"
-      //  || !id.startsWith("spotify:track:")
-    ) {
-      return false;
-    }
-    return true;
+    // // Check if the string starts with "spotify:track:"
+    //  || !id.startsWith("spotify:track:")
+  ) {
+    return false;
   }
+  return true;
+}
+
+// https://open.spotify.com/track/1B6eTnzTdnL1FH94eRT5pQ?si=37b3c62eea0142dc
+exports.extractIDFromUrl = (str) => {
+  const _url = new URL(str);
+  const _last = _url.pathname.split('/').pop();
+  return !isValidTrackId(_last) ? null : _last;
+}
+
+exports.validateTrackIDs = (ids) => {
   ids = arrayWrap(ids);
   for (let i = 0; i < ids.length; i++) {
-    if (!isValid(ids[i])) return false;
+    if (!isValidTrackId(ids[i])) return false;
   }
   return true;
 }

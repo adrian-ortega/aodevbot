@@ -12,3 +12,4 @@ exports.SR_TIMEOUT = "Sorry {0}, ya took too long.";
 exports.SR_NOTIFICATION = "Added {0} - {1} requested by {2}";
 exports.SR_SYSTEM_ERROR =
   "Oops! Looks like something went wrong @{0}. Please try again. 🤷🏾‍♀️";
+exports.SR_QUERY_LINKS_NOT_SUPPORTED = 'Hey @{0} the bot doesn\'t support those types of queries'

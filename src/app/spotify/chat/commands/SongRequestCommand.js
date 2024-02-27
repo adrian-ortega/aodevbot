@@ -1,7 +1,7 @@
 const log = require("../../../log");
 const Spotify = require("../../../spotify");
 const moment = require("moment");
-const { stringFormat } = require("../../../support/strings");
+const { stringFormat, isValidURL } = require("../../../support/strings");
 const {
   USER_DISPLAY_NAME,
   USER_MESSAGE_PARAMS,
@@ -10,6 +10,7 @@ const {
   SR_MESSAGES_UNAVAILABLE,
   SR_SONG_NOT_FOUND,
   SR_TIMEOUT,
+  SR_QUERY_LINKS_NOT_SUPPORTED,
 } = require("../locale");
 const { ONE_MINUTE } = require("../../../support/time");
 
@@ -109,6 +110,34 @@ exports.handle = async (message, state, channel, { client }, resolve) => {
     limit = parseInt(limit, 10);
     if(limit > 8) limit = 8;
     if(limit < 1) limit = 1;
+
+    if(isValidURL(q)) {
+      const spotify_track_id = Spotify.extractIDFromUrl(q);
+
+      if(spotify_track_id) {
+        // 1. pull the inforation for the track with the extracted
+        //    track_id. 
+        // 2. Create a new SongRequest object and save it in the
+        //    database,
+        // 2a. Add the song to the stream playlist
+        // 2b. Broadcast up-next for the overlay
+      }
+
+      return client.say(
+        channel,
+        stringFormat(SR_QUERY_LINKS_NOT_SUPPORTED, [
+          state[USER_DISPLAY_NAME]
+        ]),
+      );
+    }
+
+    // CHECK TO SEE IF THE query IS A LINK FIRST
+    // ADD THE SONG TO THE QUEUE if THE LINK IS
+    // CONTAINS A SPOTIFY ID, 
+    //
+    // things to know:  we need to figure out the link pattern
+    // assumptions: people suck, we must sanitize baaaybeeeeee
+    //
 
     const results = await searchSpotifyTracks(q, limit);
     const timestamp = moment.unix();
