@@ -1,43 +1,25 @@
 version: '3.8'
 
 services:
-  mysqldb:
-    container_name: aodevbot_db
-    image: mysql:5.7
-    restart: unless-stopped
-    env_file: ./.env
-    environment:
-      - MYSQL_ROOT_PASSWORD=$MYSQLDB_ROOT_PASSWORD
-      - MYSQL_DATABASE=$MYSQLDB_DATABASE
-    ports:
-      - $MYSQLDB_LOCAL_PORT:$MYSQLDB_DOCKER_PORT
-    volumes:
-      - db:/var/lib/mysql
   app:
-    container_name: aodevbot_app
-    depends_on:
-      - mysqldb
-    build: ./
+    build: .
+    user: node
     restart: unless-stopped
-    env_file: ./.env
     ports:
-      - $NODE_LOCAL_PORT:$NODE_DOCKER_PORT
+      - 8031:8080
     environment:
-      - DB_HOST=mysqldb
-      - DB_USER=$MYSQLDB_USER
-      - DB_PASSWORD=$MYSQLDB_ROOT_PASSWORD
-      - DB_NAME=$MYSQLDB_DATABASE
-      - DB_PORT=$MYSQLDB_DOCKER_PORT
-    stdin_open: true
-    tty: true
+      DB_HOST: 192.168.0.79
+      DB_USER: aodevbot_user
+      DB_PASSWORD: QOz9H5M5r@Rj[ZNs
+      DB_NAME: aodevbot_dev
+      DB_PORT: 3306
+      TWITCH_USERNAME:
+      TWITCH_CLIENT_ID:
+      TWITCH_CLIENT_SECRET:
+      SPOTIFY_CLIENT_ID:
+      SPOTIFY_CLIENT_SECRET:
+      DEBUG: false
+      DEFAULT_TIMEZONE: 'America/Los_Angeles'
+    working_dir: /home/node/app
     volumes:
-      - './src:/var/app'
-  adminer:
-    container_name: aodevbot_adminer
-    image: adminer
-    restart: always
-    ports:
-      - 8091:8080
-
-volumes:
-  db:
+      - './src:/home/node/app'
